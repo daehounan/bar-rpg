@@ -1,0 +1,41 @@
+{
+ "name": "BAR QUEST",
+ "short_name": "BAR QUEST",
+ "description": "USCPA BAR 복습 — 픽셀 던전 RPG (EN/日本語/한국어, 오프라인)",
+ "id": "./",
+ "start_url": "./",
+ "scope": "./",
+ "display": "standalone",
+ "display_override": [
+  "standalone",
+  "minimal-ui"
+ ],
+ "background_color": "#120e1d",
+ "theme_color": "#e6c25c",
+ "lang": "ko",
+ "dir": "auto",
+ "categories": [
+  "education",
+  "games"
+ ],
+ "icons": [
+  {
+   "src": "icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "icon-maskable-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "maskable"
+  }
+ ]
+}
