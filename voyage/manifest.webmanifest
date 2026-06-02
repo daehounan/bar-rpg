@@ -37,5 +37,28 @@
    "type": "image/png",
    "purpose": "maskable"
   }
+ ],
+ "screenshots": [
+  {
+   "src": "screenshot.png",
+   "sizes": "1080x1920",
+   "type": "image/png",
+   "form_factor": "narrow",
+   "label": "BAR Voyage"
+  }
+ ],
+ "shortcuts": [
+  {
+   "name": "복습 항해 / Review",
+   "short_name": "복습",
+   "url": "./?action=review",
+   "icons": [
+    {
+     "src": "icon-192.png",
+     "sizes": "192x192",
+     "type": "image/png"
+    }
+   ]
+  }
  ]
 }
