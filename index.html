@@ -24,6 +24,15 @@ h1{margin:0;font-size:clamp(22px,4vw,32px);letter-spacing:.5px;font-weight:800;
 .note{max-width:560px;text-align:center;font-size:13px;color:#9fb0c6;line-height:1.6}
 .note b{color:#e8c25e}
 .foot{font-size:11px;color:#6f8097}
+.qrsec{display:flex;flex-direction:column;align-items:center;gap:10px;max-width:600px;text-align:center}
+.qrsec h2{margin:0;font-size:15px;font-weight:700;color:#e8c25e;letter-spacing:.3px}
+.qrsec .desc{font-size:12.5px;color:#9fb0c6;line-height:1.55}
+.qrsec .desc b{color:#e8c25e}
+.qrs{display:flex;gap:18px;flex-wrap:wrap;justify-content:center;margin-top:2px}
+.qrtile{display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px;border-radius:14px;
+ background:rgba(255,255,255,.04);border:1px solid rgba(217,178,76,.3)}
+.qrtile img{border-radius:10px;background:#fff;padding:8px;box-shadow:0 4px 12px rgba(0,0,0,.4)}
+.qrtile .ql{font-size:12.5px;font-weight:600;color:#f0e6cf}
 </style></head><body>
 <h1>BAR · USCPA 복습 게임</h1>
 <div class="sub">Business Analysis &amp; Reporting · EN / 日本語 / 한국어</div>
@@ -31,6 +40,7 @@ h1{margin:0;font-size:clamp(22px,4vw,32px);letter-spacing:.5px;font-weight:800;
 <a class="card" href="./voyage/"><img src="./voyage/icon-192.png" width="84" height="84" alt=""><div class="ct"><div class="nm">BAR Voyage</div><div class="bl">⛵ 대항해시대 항해 RPG로 BAR를 복습</div><div class="go">→ 열기 / Open</div></div></a>
 <a class="card" href="./quest/"><img src="./quest/icon-192.png" width="84" height="84" alt=""><div class="ct"><div class="nm">BAR QUEST</div><div class="bl">🗡 픽셀 던전 RPG로 BAR를 복습</div><div class="go">→ 열기 / Open</div></div></a>
 </div>
+<div class="qrsec"><h2>📲 폰에 설치 — 카메라로 QR 스캔</h2><div class="desc">폰 카메라로 스캔하면 해당 게임이 열립니다 · Android는 하단 <b>설치</b> 버튼 · iPhone(Safari)은 <b>공유 ⬆️ → 홈 화면에 추가</b></div><div class="qrs"><div class="qrtile"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAjAAAAIwAQMAAACiP8MsAAAABlBMVEX///8AAABVwtN+AAAACXBIWXMAAA7EAAAOxAGVKw4bAAACtklEQVR4nO3d0U6EMBCF4RIebB+tfXBCtXROZ2hW7Uav3P8kIOL2i1eT6UA0JUIIedM8akz5vFNrO9q5pZ5pCx84P2/ttyUHDAzMGzAlKdmYgLSv27W4n9PFHGPJDgMDA/MKk61k5etwSNiFxLJ1WOk6YGBgYH7HtHRiKlvbWAoDAwPzB4wXq9rTEV2tli0YGBiYJ4zibVKK2S5AjZIvFQkDAwOzyMQ4M47TGiQdKll1sDAwMDBLzJx8/WxiPOfTRTAwMDALjG/LWord7cjVLmn8Iy6WrQMGBuZtmJZsSDag57oWo8nxfsMOGBgYmFeYjoiKUAB8P+XPqFS4YGBgYBYZh0pSg3Q1SWlAPZst/er5FAwMDMyPjCY3RduxlDS/8bf9qi1Wq+SBgYGBWWCqLc/VB0K30rXdypaXqn2gMDAwMMuMIyVZa6Rx0GnLz2kING/LYGBgYH5k2sI8MLVI1iSN7wYUh87eKMHAwMAsMDUQ7exAux+apPiGsYj5/WIYGJj/ypRQb0ryvZRVGy2fOxyhMDAwMEuMeps6oJTU14TFegOnxyHvcGBgYGAWmHI7d3BQ8flUL1pesmBgYGBeYmZKwMhmlECf3uwTBAMDA/MN87Cl4lS0rEny51NeqProZw/XMDAwMIuMylW+kcZthmn87G2SIzAwMDAvMDOhs42AqmExwmBgYGCWmZ5sn3XmyjaA7UYeRsHAwPx/Zk6ung5atK/y5TpgYGBglphHjSlh4TTBUQE7nv4mMDAwMAtMGdd9X5WS76dqHY2RP51qmSc4MDAwMEtMvu6VwQRkfv/Gt2UCEwwMDMxvmVC25kZJT8PTQtmCgYGB+Za5xUfOZ9J/YJnnSDAwMDBLjJLDtVolI3RWoYrPwmFgYGAWmRgvW52o8e9R+PYsDp9hYGBgFhlCCHnDfACFajYhWxxDfQAAAABJRU5ErkJggg==" alt="voyage QR" width="150" height="150"><div class="ql">⛵ BAR Voyage</div></div><div class="qrtile"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAjAAAAIwAQMAAACiP8MsAAAABlBMVEX///8AAABVwtN+AAAACXBIWXMAAA7EAAAOxAGVKw4bAAACiElEQVR4nO3cQZKjMAyFYadYZNlH4Cg5GhwtR+EILFlQrWnHspAN0zXLUfK/TShif9mpLBuSEiGEfGge0ibf+yoXD1nTIDKnUbZ8e/q5u6VbN2GHgYGBicmsyTIU5pU8ZD1mW24ZtowwMDAwcZmhlMO1MFZWnwW2IuqYsYyYYWBgYN6L2XMRfZa15Pwz6i7fuZouMDAwMO/MrMdacqgLRu2bNxgYGJj3YSzGpNpA6y/oJPXmYwYMDAxMWKaNK6J6URrom7toAgMDAxOSOccWlc+ULph/DQwMDMx/zbgGWouoe3BGs6R7/jgX0RkGBgYmLuOOSvbSN9sdzSjnbPWrHQYGBiYmo5uFeZLfPix51ddcRL/LpL+tJWFgYGDiMl/N8zIN485M9MI9SgMDAwMTkNF2OcfOTKQy9pX0k2pLnWBgYGBiMs32ofXNtpbUwxOLbR9eNNAwMDAwgRirlDrbdg1tUTkdS0jtm6eKzukIDAwMzCcyj3qr78NztBZr8uytu1hgYGBg4jK6mHSzU+dJOYNxOfXhMDAwMMGYtVk5Fk8fxDn34RY7it5hYGBggjP2yLUdxrgNSiuit4apgYGBgQnIpFIy+0eu9atJXN/8ittHXGBgYGBCM1f7iArn3KWPHUXvMDAwMBGZc6ysqmeM1c7kW2oYGBiYkMxD2pRhvqUW0ffuJnG7hlLg47dhYGBggjHtO8YG251jrC+i1lLvMDAwMFEZPSFZO8ZtH0r9zwXLRR8OAwMDE5yxDUW9GI+VoxZRt6EIAwMD816MDZrklywpwcDAwERlLEPpm/s35/JY2zW0teTV33bBwMDAxGHadA30UJj2vwUnsVOUBAMDA/PRDCGEfGD+ALGCdNHAoZt5AAAAAElFTkSuQmCC" alt="quest QR" width="150" height="150"><div class="ql">🗡️ BAR QUEST</div></div></div></div>
 <div class="note">각 게임을 열면 하단에 <b>📲 설치</b> 버튼이 뜨면 탭하세요.<br>
 iPhone(Safari)은 <b>공유 ⬆️ → 홈 화면에 추가</b>. 설치 후에는 오프라인으로 실행됩니다.</div>
 <div class="foot">검증 자료 기반 · 오프라인 · 기록은 기기에 저장</div>
