@@ -83,6 +83,7 @@ body.noflicker #crt{opacity:.18}
   box-shadow:inset 2px 2px 0 #3d3160, inset -2px -2px 0 #1a142c, 4px 4px 0 var(--shadow);
   padding:12px; border-radius:3px;}
 .panel.alt{background:var(--panel2);}
+.btn,.choice{touch-action:manipulation}
 .btn{font-family:'Press'; font-size:10px; color:var(--ink); cursor:pointer; user-select:none;
   background:linear-gradient(180deg,#4a3c72,#352a52); border:3px solid var(--line);
   box-shadow:inset 2px 2px 0 #5e4c8c, inset -2px -2px 0 #211a38, 3px 3px 0 var(--shadow);
@@ -1141,9 +1142,9 @@ function renderMnemonic(box,enc){
 function nextBtn(box,enc,ok){
   const b=el('button','btn gold lg', SESS.i>=SESS.queue.length-1?'결과 보기 ▶':'다음 ▶');
   b.style.marginTop='12px';
-  b.onclick=()=>{ commitResult(enc,ok); SESS.i++; go('battle'); };
+  b.onclick=()=>{ try{commitResult(enc,ok);}catch(_e){console.error('commitResult',_e);} SESS.i++; go('battle'); };
   box.append(b);localize(box);
-  setTimeout(()=>b.scrollIntoView({behavior:'smooth',block:'center'}),60);
+  setTimeout(()=>{try{b.scrollIntoView({block:'center'});}catch(_e){}},60);
 }
 // recall path resolves directly (self-grade buttons)
 function resolve(enc,ok){
@@ -1152,7 +1153,7 @@ function resolve(enc,ok){
   resolveFx(ok);
   // for recall show next
   const b=el('button','btn gold lg', SESS.i>=SESS.queue.length-1?'결과 보기 ▶':'다음 ▶');
-  b.style.marginTop='12px'; b.onclick=()=>{ commitResult(enc,ok); SESS.i++; go('battle'); };
+  b.style.marginTop='12px'; b.onclick=()=>{ try{commitResult(enc,ok);}catch(_e){console.error('commitResult',_e);} SESS.i++; go('battle'); };
   box.append(b);localize(box);
 }
 

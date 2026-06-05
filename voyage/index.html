@@ -88,6 +88,7 @@ body.noflicker #crt{opacity:.12}
 .muted{color:var(--ink-dim)}
 .dark .muted{color:#8fb6c4}
 
+.btn,.choice{touch-action:manipulation}
 .btn{font-family:'Press';font-size:10px;color:#2a1c08;cursor:pointer;user-select:none;
   background:linear-gradient(180deg,#e8cf90,#caa24a);border:3px solid var(--line);
   box-shadow:inset 2px 2px 0 #f7e7b3, inset -2px -2px 0 #9a7322, 3px 3px 0 var(--shadow);
@@ -1210,9 +1211,9 @@ function renderMnemonic(box,enc){
   box.append(wrap);
 }
 function nextBtn(box,enc,ok){const b=el('button','btn gold lg',SESS.i>=SESS.queue.length-1?'항해 결과 ▶':'다음 ▶');b.style.marginTop='12px';
-  b.onclick=()=>{commitResult(enc,ok);SESS.i++;go('voyage');};box.append(b);localize(box);setTimeout(()=>b.scrollIntoView({behavior:'smooth',block:'center'}),60);}
+  b.onclick=()=>{try{commitResult(enc,ok);}catch(_e){console.error('commitResult',_e);}SESS.i++;go('voyage');};box.append(b);localize(box);setTimeout(()=>{try{b.scrollIntoView({block:'center'});}catch(_e){}},60);}
 function resolveSelf(enc,ok){const box=$('#qbox');setTimeout(function(){localize(box);},0);box.querySelectorAll('.btn').forEach(b=>b.setAttribute('disabled',''));resolveFx(ok);
-  const b=el('button','btn gold lg',SESS.i>=SESS.queue.length-1?'항해 결과 ▶':'다음 ▶');b.style.marginTop='12px';b.onclick=()=>{commitResult(enc,ok);SESS.i++;go('voyage');};box.append(b);}
+  const b=el('button','btn gold lg',SESS.i>=SESS.queue.length-1?'항해 결과 ▶':'다음 ▶');b.style.marginTop='12px';b.onclick=()=>{try{commitResult(enc,ok);}catch(_e){console.error('commitResult',_e);}SESS.i++;go('voyage');};box.append(b);}
 function resolveFx(ok){const hs=$('#heroSprite'),es=$('#enemySprite');
   if(ok){sfx('ok');if(hs)hs.classList.add('lunge-p');if(es)setTimeout(()=>es.classList.add('shake','flash'),120);floatText(es,'-'+navPower(),'var(--gold)');}
   else{sfx('no');sfx('hit');if(es)es.classList.add('lunge-e');if(hs)setTimeout(()=>hs.classList.add('shake','flash'),120);}}
