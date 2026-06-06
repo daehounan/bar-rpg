@@ -245,7 +245,7 @@ h1,h2,h3{font-family:'Press';line-height:1.4}
 .commission{border:3px solid var(--pa-edge);background:linear-gradient(180deg,#f3e7c6,#e4d2a6);border-radius:3px;padding:11px;box-shadow:3px 3px 0 var(--shadow);position:relative}
 .commission+.commission{margin-top:10px}
 .comm-done{opacity:.6;filter:saturate(.7)}
-.comm-badge{font-size:9px;font-weight:700;color:#2e7d32;background:#d7f0d0;border:1px solid #8cc88a;border-radius:8px;padding:1px 6px;margin-left:6px;white-space:nowrap;vertical-align:middle}
+.comm-badge{font-size:9px;font-weight:700;color:#1b5e20;background:#d7f0d0;border:1px solid #8cc88a;border-radius:8px;padding:1px 6px;margin-left:6px;white-space:nowrap;vertical-align:middle}
 .seal{position:absolute;top:-8px;right:-8px;width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#e0635a,#8e2c22);border:2px solid #5a1b15;display:flex;align-items:center;justify-content:center;font-size:13px;transform:rotate(8deg)}
 /* sailing cutscene */
 #sail{position:absolute;inset:0;z-index:65;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;cursor:pointer;
@@ -638,6 +638,8 @@ function langBar(){var r=el('div','row');r.style.cssText='justify-content:center
 
 const $=(s,r=document)=>r.querySelector(s);
 const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;};
+const clickable=(node,fn)=>{node.onclick=fn;node.setAttribute('role','button');node.tabIndex=0;node.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();fn(e);}});return node;};
+function upgradeKbd(root){if(!root)return;root.querySelectorAll('*').forEach(n=>{if(!n.onclick)return;const t=n.tagName;if(t==='BUTTON'||t==='A'||t==='INPUT'||t==='TEXTAREA'||t==='SELECT')return;if(n.getAttribute('role')==='button')return;n.setAttribute('role','button');if(!n.hasAttribute('tabindex'))n.tabIndex=0;n.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();if(n.onclick)n.onclick(e);}});});}
 const rnd=n=>Math.floor(Math.random()*n);
 const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=rnd(i+1);[a[i],a[j]]=[a[j],a[i]];}return a;};
 const sample=(a,n)=>shuffle(a).slice(0,n);
@@ -887,7 +889,7 @@ function renderHud0(){
 /* ---------- router ---------- */
 let CUR='title', CURARG=null;
 const PARENT={chart:'title',harbor:'chart',voyage:'chart',patron:'chart',trade:'chart',codex:'chart',captain:'chart',port:'chart',settings:'chart'};
-function go(scr,arg){CUR=scr;CURARG=arg;const inner=$('#screen-inner');inner.className='scr';inner.id='screen-inner';inner.innerHTML='';ROUTES[scr](inner,arg);$('#screen').scrollTop=0;renderHud();save();localize($('#app'));try{history.pushState({scr},'');}catch(e){}}
+function go(scr,arg){CUR=scr;CURARG=arg;const inner=$('#screen-inner');inner.className='scr';inner.id='screen-inner';inner.innerHTML='';ROUTES[scr](inner,arg);upgradeKbd(inner);$('#screen').scrollTop=0;renderHud();save();localize($('#app'));try{history.pushState({scr},'');}catch(e){}}
 function navGuard(fn){ if(SESS&&CUR==='voyage'){confirmLeave(fn);} else fn(); }
 function goBack(){ navGuard(()=>{ const p=PARENT[CUR]; if(p)go(p); }); }
 function goHome(){ navGuard(()=>go('chart')); }
@@ -985,7 +987,7 @@ function chartScreen(root){
       <div class="en">${a.name}</div>
       <div class="row" style="align-items:center;gap:6px"><div class="mini-bar grow"><i style="width:${disc}%;background:${a.color}"></i></div><span class="pct">발견 ${disc}%</span></div>
       <div style="margin-top:4px"><span class="tag">출제 ${a.weight}</span>${freqMid(a.weight)>=25?' <span class="tag" style="color:var(--gold-d)">★ 빈출</span>':''} ${exp?'<span class="tag" style="color:var(--red-d)">⚔ 대원정 가능</span>':'<span class="tag muted">🔒 대원정</span>'}</div>`;
-    node.append(port,m);node.onclick=()=>{sfx('select');sailTo(a.id,()=>go('harbor',a.id));};list.append(node);
+    node.append(port,m);clickable(node,()=>{sfx('select');sailTo(a.id,()=>go('harbor',a.id));});list.append(node);
     if(idx<DATA.areas.length-1)list.append(el('div','rhumb'));
   });
   root.append(list);
@@ -1331,7 +1333,7 @@ function codexScreen(root,tab){
   const back=el('button','btn sm wood','◀ 해도');back.onclick=()=>{sfx('select');go('chart');};root.append(back);
   root.append(el('div','sec-t','백과사전 / 항해일지'));
   const tabs=el('div','tabs');
-  [['disc','🏝 발견물'],['chart','🧭 해도(공식)'],['lang','🦜 언어'],['hazard','🌊 위험'],['ledger','📊 장부'],['sr','⚡ 즉답']].forEach(([k,l])=>{const t=el('div','tab'+(codexTab===k?' on':''),l);t.onclick=()=>{sfx('select');go('codex',k);};tabs.append(t);});
+  [['disc','🏝 발견물'],['chart','🧭 해도(공식)'],['lang','🦜 언어'],['hazard','🌊 위험'],['ledger','📊 장부'],['sr','⚡ 즉답']].forEach(([k,l])=>{const t=el('div','tab'+(codexTab===k?' on':''),l);clickable(t,()=>{sfx('select');go('codex',k);});tabs.append(t);});
   root.append(tabs);
   const c=el('div','col');
   if(codexTab==='disc'){

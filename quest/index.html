@@ -371,6 +371,8 @@ function langBar(){var r=el('div','row');r.style.cssText='justify-content:center
 /* ---------- tiny helpers ---------- */
 const $ = (s,r=document)=>r.querySelector(s);
 const el = (tag,cls,html)=>{const e=document.createElement(tag); if(cls)e.className=cls; if(html!=null)e.innerHTML=html; return e;};
+const clickable = (node,fn)=>{node.onclick=fn; node.setAttribute('role','button'); node.tabIndex=0; node.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();fn(e);}}); return node;};
+function upgradeKbd(root){if(!root)return;root.querySelectorAll('*').forEach(n=>{if(!n.onclick)return;const t=n.tagName;if(t==='BUTTON'||t==='A'||t==='INPUT'||t==='TEXTAREA'||t==='SELECT')return;if(n.getAttribute('role')==='button')return;n.setAttribute('role','button');if(!n.hasAttribute('tabindex'))n.tabIndex=0;n.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();if(n.onclick)n.onclick(e);}});});}
 const rnd = n=>Math.floor(Math.random()*n);
 const pick = a=>a[rnd(a.length)];
 function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=rnd(i+1);[a[i],a[j]]=[a[j],a[i]];}return a;}
@@ -781,7 +783,7 @@ function renderHud(){
 let CUR='title', CURARG=null;
 const PARENT={map:'title',region:'map',battle:'map',codex:'map',hero:'map',shop:'map',settings:'map'};
 function go(scr,arg){ CUR=scr; CURARG=arg; const r=ROUTES[scr]; const inner=$('#screen-inner'); inner.className='scr'; inner.id='screen-inner';
-  inner.innerHTML=''; r(inner,arg); $('#screen').scrollTop=0; renderHud(); try{localize(document.body);}catch(e){} save(); try{history.pushState({scr},'');}catch(e){} }
+  inner.innerHTML=''; r(inner,arg); upgradeKbd(inner); $('#screen').scrollTop=0; renderHud(); try{localize(document.body);}catch(e){} save(); try{history.pushState({scr},'');}catch(e){} }
 function navGuard(fn){ if(SESS&&CUR==='battle'){confirmLeave(fn);} else fn(); }
 function goBack(){ navGuard(()=>{ const p=PARENT[CUR]; if(p)go(p); }); }
 function goHome(){ navGuard(()=>go('map')); }
@@ -876,7 +878,7 @@ function mapScreen(root){
         <span class="pct">${pc}%</span></div>
       <div style="margin-top:4px"><span class="tag">출제 ${a.weight}</span> ${boss?'<span class="tag" style="color:var(--gold)">⚔ 보스 OPEN</span>':'<span class="tag muted">🔒 보스</span>'}</div>`;
     node.append(badge,meta);
-    node.onclick=()=>{sfx('select');go('region',a.id);};
+    clickable(node,()=>{sfx('select');go('region',a.id);});
     list.append(node);
     if(idx<DATA.areas.length-1)list.append(el('div','conn'));
   });
@@ -1291,7 +1293,7 @@ function codexScreen(root,tab){
   root.append(el('div','sec-t','도감 / CODEX'));
   const tabs=el('div','tabs');
   [['formula','📐 공식'],['mnemonic','🧠 주문'],['trap','🩸 함정'],['tbs','📊 TBS'],['sr','⚡ SR']].forEach(([k,l])=>{
-    const t=el('div','tab'+(codexTab===k?' on':''),l); t.onclick=()=>{sfx('select');go('codex',k);}; tabs.append(t);
+    const t=el('div','tab'+(codexTab===k?' on':''),l); clickable(t,()=>{sfx('select');go('codex',k);}); tabs.append(t);
   });
   root.append(tabs);
   const c=el('div','col');
