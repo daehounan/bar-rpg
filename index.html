@@ -33,6 +33,15 @@ h1{margin:0;font-size:clamp(22px,4vw,32px);letter-spacing:.5px;font-weight:800;
  background:rgba(255,255,255,.04);border:1px solid rgba(217,178,76,.3)}
 .qrtile img{border-radius:10px;background:#fff;padding:8px;box-shadow:0 4px 12px rgba(0,0,0,.4)}
 .qrtile .ql{font-size:12.5px;font-weight:600;color:#f0e6cf}
+.maker{display:flex;gap:14px;align-items:center;width:560px;max-width:92vw;text-decoration:none;color:inherit;
+ padding:14px 16px;border-radius:16px;background:linear-gradient(180deg,rgba(110,168,254,.12),rgba(255,255,255,.02));
+ border:1px solid rgba(110,168,254,.45);box-shadow:0 8px 24px rgba(0,0,0,.4);transition:transform .15s,border-color .15s}
+.maker:hover{transform:translateY(-2px);border-color:rgba(110,168,254,.9)}
+.mk-ava{font-size:30px;flex:0 0 auto;width:48px;height:48px;display:flex;align-items:center;justify-content:center;
+ border-radius:50%;background:rgba(110,168,254,.15);border:1px solid rgba(110,168,254,.4)}
+.mk-nm{font-weight:700;font-size:15px;color:#dbe7ff}
+.mk-bl{font-size:12.5px;color:#9fb0c6;margin:3px 0 6px;line-height:1.5}
+.mk-go{font-size:12.5px;font-weight:600;color:#7fb0ff}
 </style></head><body>
 <h1>BAR · USCPA 복습 게임</h1>
 <div class="sub">Business Analysis &amp; Reporting · EN / 日本語 / 한국어</div>
@@ -43,5 +52,13 @@ h1{margin:0;font-size:clamp(22px,4vw,32px);letter-spacing:.5px;font-weight:800;
 <div class="qrsec"><h2>📲 폰에 설치 — 카메라로 QR 스캔</h2><div class="desc">폰 카메라로 스캔하면 해당 게임이 열립니다 · Android는 하단 <b>설치</b> 버튼 · iPhone(Safari)은 <b>공유 ⬆️ → 홈 화면에 추가</b></div><div class="qrs"><div class="qrtile"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAjAAAAIwAQMAAACiP8MsAAAABlBMVEX///8AAABVwtN+AAAACXBIWXMAAA7EAAAOxAGVKw4bAAACtklEQVR4nO3d0U6EMBCF4RIebB+tfXBCtXROZ2hW7Uav3P8kIOL2i1eT6UA0JUIIedM8akz5vFNrO9q5pZ5pCx84P2/ttyUHDAzMGzAlKdmYgLSv27W4n9PFHGPJDgMDA/MKk61k5etwSNiFxLJ1WOk6YGBgYH7HtHRiKlvbWAoDAwPzB4wXq9rTEV2tli0YGBiYJ4zibVKK2S5AjZIvFQkDAwOzyMQ4M47TGiQdKll1sDAwMDBLzJx8/WxiPOfTRTAwMDALjG/LWord7cjVLmn8Iy6WrQMGBuZtmJZsSDag57oWo8nxfsMOGBgYmFeYjoiKUAB8P+XPqFS4YGBgYBYZh0pSg3Q1SWlAPZst/er5FAwMDMyPjCY3RduxlDS/8bf9qi1Wq+SBgYGBWWCqLc/VB0K30rXdypaXqn2gMDAwMMuMIyVZa6Rx0GnLz2kING/LYGBgYH5k2sI8MLVI1iSN7wYUh87eKMHAwMAsMDUQ7exAux+apPiGsYj5/WIYGJj/ypRQb0ryvZRVGy2fOxyhMDAwMEuMeps6oJTU14TFegOnxyHvcGBgYGAWmHI7d3BQ8flUL1pesmBgYGBeYmZKwMhmlECf3uwTBAMDA/MN87Cl4lS0rEny51NeqProZw/XMDAwMIuMylW+kcZthmn87G2SIzAwMDAvMDOhs42AqmExwmBgYGCWmZ5sn3XmyjaA7UYeRsHAwPx/Zk6ung5atK/y5TpgYGBglphHjSlh4TTBUQE7nv4mMDAwMAtMGdd9X5WS76dqHY2RP51qmSc4MDAwMEtMvu6VwQRkfv/Gt2UCEwwMDMxvmVC25kZJT8PTQtmCgYGB+Za5xUfOZ9J/YJnnSDAwMDBLjJLDtVolI3RWoYrPwmFgYGAWmRgvW52o8e9R+PYsDp9hYGBgFhlCCHnDfACFajYhWxxDfQAAAABJRU5ErkJggg==" alt="voyage QR" width="150" height="150"><div class="ql">⛵ BAR Voyage</div></div><div class="qrtile"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAjAAAAIwAQMAAACiP8MsAAAABlBMVEX///8AAABVwtN+AAAACXBIWXMAAA7EAAAOxAGVKw4bAAACiElEQVR4nO3cQZKjMAyFYadYZNlH4Cg5GhwtR+EILFlQrWnHspAN0zXLUfK/TShif9mpLBuSEiGEfGge0ibf+yoXD1nTIDKnUbZ8e/q5u6VbN2GHgYGBicmsyTIU5pU8ZD1mW24ZtowwMDAwcZmhlMO1MFZWnwW2IuqYsYyYYWBgYN6L2XMRfZa15Pwz6i7fuZouMDAwMO/MrMdacqgLRu2bNxgYGJj3YSzGpNpA6y/oJPXmYwYMDAxMWKaNK6J6URrom7toAgMDAxOSOccWlc+ULph/DQwMDMx/zbgGWouoe3BGs6R7/jgX0RkGBgYmLuOOSvbSN9sdzSjnbPWrHQYGBiYmo5uFeZLfPix51ddcRL/LpL+tJWFgYGDiMl/N8zIN485M9MI9SgMDAwMTkNF2OcfOTKQy9pX0k2pLnWBgYGBiMs32ofXNtpbUwxOLbR9eNNAwMDAwgRirlDrbdg1tUTkdS0jtm6eKzukIDAwMzCcyj3qr78NztBZr8uytu1hgYGBg4jK6mHSzU+dJOYNxOfXhMDAwMMGYtVk5Fk8fxDn34RY7it5hYGBggjP2yLUdxrgNSiuit4apgYGBgQnIpFIy+0eu9atJXN/8ittHXGBgYGBCM1f7iArn3KWPHUXvMDAwMBGZc6ysqmeM1c7kW2oYGBiYkMxD2pRhvqUW0ffuJnG7hlLg47dhYGBggjHtO8YG251jrC+i1lLvMDAwMFEZPSFZO8ZtH0r9zwXLRR8OAwMDE5yxDUW9GI+VoxZRt6EIAwMD816MDZrklywpwcDAwERlLEPpm/s35/JY2zW0teTV33bBwMDAxGHadA30UJj2vwUnsVOUBAMDA/PRDCGEfGD+ALGCdNHAoZt5AAAAAElFTkSuQmCC" alt="quest QR" width="150" height="150"><div class="ql">🗡️ BAR QUEST</div></div></div></div>
 <div class="note">각 게임을 열면 하단에 <b>📲 설치</b> 버튼이 뜨면 탭하세요.<br>
 iPhone(Safari)은 <b>공유 ⬆️ → 홈 화면에 추가</b>. 설치 후에는 오프라인으로 실행됩니다.</div>
-<div class="foot">검증 자료 기반 · 오프라인 · 기록은 기기에 저장</div>
+<a class="maker" href="https://www.linkedin.com/in/daehounan/" target="_blank" rel="noopener noreferrer">
+<div class="mk-ava">⚓</div>
+<div>
+<div class="mk-nm">만든 사람 · 안대훈 (Daehoun An)</div>
+<div class="mk-bl">USCPA 수험생이 BAR 시험 공부를 위해 직접 만든 복습 게임입니다.<br>209 BAR + 50 Finance 문제 · 3개국어 · 오프라인 PWA.</div>
+<div class="mk-go">🔗 LinkedIn에서 만든 사람 보기 →</div>
+</div>
+</a>
+<div class="foot">검증 자료 기반 · 오프라인 · 기록은 기기에 저장 · © Daehoun An</div>
 </body></html>
