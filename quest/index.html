@@ -84,6 +84,7 @@ body.noflicker #crt{opacity:.18}
   padding:12px; border-radius:3px;}
 .panel.alt{background:var(--panel2);}
 .btn,.choice{touch-action:manipulation}
+.navspacer{height:48px;flex:0 0 auto;pointer-events:none}
 .btn{font-family:'Press'; font-size:10px; color:var(--ink); cursor:pointer; user-select:none;
   background:linear-gradient(180deg,#4a3c72,#352a52); border:3px solid var(--line);
   box-shadow:inset 2px 2px 0 #5e4c8c, inset -2px -2px 0 #211a38, 3px 3px 0 var(--shadow);
@@ -1167,12 +1168,12 @@ function renderMnemonic(box,enc){
   box.append(wrap);
 }
 
+function revealNav(box,b){box.append(b);box.append(el('div','navspacer'));localize(box);setTimeout(()=>{try{b.scrollIntoView({block:'center'});}catch(_e){}},60);}
 function nextBtn(box,enc,ok){
   const b=el('button','btn gold lg', SESS.i>=SESS.queue.length-1?'결과 보기 ▶':'다음 ▶');
   b.style.marginTop='12px';
   b.onclick=()=>{ try{commitResult(enc,ok);}catch(_e){console.error('commitResult',_e);} SESS.i++; go('battle'); };
-  box.append(b);localize(box);
-  setTimeout(()=>{try{b.scrollIntoView({block:'center'});}catch(_e){}},60);
+  revealNav(box,b);
 }
 // recall path resolves directly (self-grade buttons)
 function resolve(enc,ok){
@@ -1182,7 +1183,7 @@ function resolve(enc,ok){
   // for recall show next
   const b=el('button','btn gold lg', SESS.i>=SESS.queue.length-1?'결과 보기 ▶':'다음 ▶');
   b.style.marginTop='12px'; b.onclick=()=>{ try{commitResult(enc,ok);}catch(_e){console.error('commitResult',_e);} SESS.i++; go('battle'); };
-  box.append(b);localize(box);
+  revealNav(box,b);
 }
 
 function resolveFx(ok){
