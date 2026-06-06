@@ -77,7 +77,7 @@ body.noflicker #crt{opacity:.12}
   -webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:#7a5230 #0e3346;}
 #screen::-webkit-scrollbar{width:10px}
 #screen::-webkit-scrollbar-thumb{background:#7a5230;border:2px solid #0e3346;border-radius:6px}
-.scr{padding:16px;padding-bottom:calc(16px + env(safe-area-inset-bottom,0px));min-height:100%;display:flex;flex-direction:column;}
+.scr{padding:16px;padding-bottom:max(56px, calc(16px + env(safe-area-inset-bottom,0px)));min-height:100%;display:flex;flex-direction:column;}
 
 /* parchment panel */
 .panel{background:linear-gradient(180deg,var(--pa0),var(--pa1));color:var(--ink);
@@ -89,7 +89,6 @@ body.noflicker #crt{opacity:.12}
 .dark .muted{color:#8fb6c4}
 
 .btn,.choice{touch-action:manipulation}
-.navspacer{height:48px;flex:0 0 auto;pointer-events:none}
 .btn{font-family:'Press';font-size:10px;color:#2a1c08;cursor:pointer;user-select:none;
   background:linear-gradient(180deg,#e8cf90,#caa24a);border:3px solid var(--line);
   box-shadow:inset 2px 2px 0 #f7e7b3, inset -2px -2px 0 #9a7322, 3px 3px 0 var(--shadow);
@@ -1247,7 +1246,7 @@ function renderMnemonic(box,enc){
       rv.append(el('div','expl',`<strong>${esc(mn.code)}</strong> = ${esc(mn.full)} <span class="muted">(${esc(mn.category)})</span>`));box.append(rv);nextBtn(box,enc,o.ok);resolveFx(o.ok);};wrap.append(c);});
   box.append(wrap);
 }
-function revealNav(box,b){box.append(b);box.append(el('div','navspacer'));localize(box);setTimeout(()=>{try{b.scrollIntoView({block:'center'});}catch(_e){}},60);}
+function revealNav(box,b){box.append(b);localize(box);setTimeout(()=>{try{b.scrollIntoView({block:'center'});}catch(_e){}},60);}
 function nextBtn(box,enc,ok){const b=el('button','btn gold lg',SESS.i>=SESS.queue.length-1?'항해 결과 ▶':'다음 ▶');b.style.marginTop='12px';
   b.onclick=()=>{try{commitResult(enc,ok);}catch(_e){console.error('commitResult',_e);}SESS.i++;go('voyage');};revealNav(box,b);}
 function resolveSelf(enc,ok){const box=$('#qbox');setTimeout(function(){localize(box);},0);box.querySelectorAll('.btn').forEach(b=>b.setAttribute('disabled',''));resolveFx(ok);
