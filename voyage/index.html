@@ -799,7 +799,7 @@ function applyImport(d){
   const f=fresh();for(const k in f)if(!(k in d))d[k]=f[k];S=d;try{localStorage.setItem(SAVE_KEY,JSON.stringify(S));}catch(e){}closeModal();location.reload();}
 
 function getM(id){return S.m[id]||(S.m[id]={box:0,seen:0,correct:0,wrong:0,last:0});}
-function bumpM(id,ok){const m=getM(id);m.seen++;m.last=Date.now();if(ok){m.correct++;m.box=clamp(m.box+1,0,5);}else{m.wrong++;m.box=clamp(m.box-1,0,5);}markStudied();}
+function bumpM(id,ok){const m=getM(id);m.seen++;m.last=Date.now();if(ok){m.correct++;m.box=clamp(m.box+1,0,5);}else{m.wrong++;m.box=0;}markStudied();}
 function todayStr(){var d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
 function markStudied(){var t=todayStr();if(S.lastDay===t)return;var y=new Date();y.setDate(y.getDate()-1);var ys=y.getFullYear()+'-'+(y.getMonth()+1)+'-'+y.getDate();S.streak=(S.lastDay===ys)?((S.streak||0)+1):1;S.lastDay=t;if((S.streak||0)>(S.bestStreak||0))S.bestStreak=S.streak;}
 function areaItems(aid){return[...DATA.topics.filter(x=>x.area===aid).map(x=>'T'+x.num),...DATA.mcqs.filter(x=>x.area===aid).map(x=>x.id),...DATA.traps.filter(x=>x.area===aid).map(x=>'TRAP'+x.id)];}
@@ -1096,6 +1096,9 @@ function patronScreen(root){
    SESSION / VOYAGE ENGINE
    ========================================================================= */
 let SESS=null;
+let _mockClock=null;
+function mockElapsedStr(){var s=Math.max(0,Math.floor((Date.now()-((SESS&&SESS.startT)||Date.now()))/1000));return '⏱ '+Math.floor(s/60)+':'+('0'+(s%60)).slice(-2);}
+function mockClockTick(){var e=document.getElementById('mock-clock');if(!e||!SESS||!SESS.mock){if(_mockClock){clearInterval(_mockClock);_mockClock=null;}return;}e.textContent=mockElapsedStr();}
 function buildEnc(kind,ref){
   if(kind==='recall'){return{kind,id:ref,topic:DATA.topics.find(x=>'T'+x.num===ref)};}
   if(kind==='mcq'){return{kind,id:ref,mcq:DATA.mcqs.find(x=>x.id===ref)};}
@@ -1179,8 +1182,8 @@ function voyageScreen(root){
   const flee=el('button','btn sm wood','✕');flee.onclick=confirmFlee;
   const prog=el('div','grow panel');prog.style.padding='8px 10px';
   prog.innerHTML=`<div class="press" style="font-size:9px;color:var(--wood-d)">${SESS.title}</div>
-    <div class="tiny muted">${SESS.i+1} / ${SESS.queue.length} · 순풍 <b style="color:var(--gold-d)">x${S.wind}</b>${SESS.commission?' · 📜의뢰':''}</div>`;
-  top.append(flee,prog);root.append(top);
+    <div class="tiny muted">${SESS.i+1} / ${SESS.queue.length} · 순풍 <b style="color:var(--gold-d)">x${S.wind}</b>${SESS.commission?' · 📜의뢰':''}${SESS.mock?' · <span id="mock-clock">'+mockElapsedStr()+'</span>':''}</div>`;
+  top.append(flee,prog);root.append(top);if(SESS.mock&&!_mockClock)_mockClock=setInterval(mockClockTick,1000);
 
   const arena=el('div','arena');arena.append(el('div','waves'));
   const fighters=el('div','fighters');
@@ -1367,10 +1370,11 @@ function startWeakDrill(aid){
 }
 function mockResultPanel(mk,comp,mcqP,tbsP){
   var pass=comp>=75;
+  var _el=(SESS&&SESS.startT)?Math.round((Date.now()-SESS.startT)/60000):null,_u=(S.lang==='ko'?'분':S.lang==='ja'?'分':' min');
   var best=(S.mockHist||[]).reduce(function(m,h){return Math.max(m,h.comp);},0);
   var p=el('div','panel');p.style.marginTop='12px';
   p.innerHTML='<div class="press" style="font-size:12px;color:'+(pass?'var(--gold-d)':'var(--red-d)')+'">📝 모의 점수(추정) '+comp+' · '+(pass?'합격권':'더 학습 필요')+'</div>'
-    +'<div class="tiny muted" style="margin-top:3px">MCQ '+mcqP+'% ('+mk.mcqC+'/'+mk.mcqT+') · TBS '+tbsP+'% ('+mk.tbsC+'/'+mk.tbsT+') · 최고 점수 '+best+'</div><div class="tiny muted" style="margin-top:2px;opacity:.8">※ 게임 추정치 · AICPA 환산점수 아님</div>';
+    +'<div class="tiny muted" style="margin-top:3px">MCQ '+mcqP+'% ('+mk.mcqC+'/'+mk.mcqT+') · TBS '+tbsP+'% ('+mk.tbsC+'/'+mk.tbsT+') · 최고 점수 '+best+'</div><div class="tiny muted" style="margin-top:2px;opacity:.8">※ 게임 추정치 · AICPA 환산점수 아님</div>'+(_el!=null?'<div class="tiny muted" style="margin-top:2px">⏱ '+_el+_u+'</div>':'');
   var aw=el('div','col');aw.style.marginTop='10px';aw.append(el('div','tiny','<b>영역별 정답률</b>'));
   var ar=mk.area||{},weak=null,weakP=101;
   DATA.areas.forEach(function(a){var s=ar[a.id]||{c:0,a:0};var pct=s.a?Math.round(s.c/s.a*100):0;if(s.a&&pct<weakP){weakP=pct;weak=a.id;}
@@ -1628,18 +1632,18 @@ function tbsListScreen(root){
 function mockQueue(buildFn){
   function mid(w){var m=(w||'').match(/(\d+)\D+(\d+)/);return m?(+m[1]+ +m[2])/2:15;}
   var per={},tot=0;DATA.areas.forEach(function(a){var x=mid(a.weight);per[a.id]=x;tot+=x;});
-  var TARGET=24,q=[];
+  var TARGET=30,q=[];
   DATA.areas.forEach(function(a){
     var n=Math.max(2,Math.round(TARGET*per[a.id]/tot));
     shuffle(DATA.mcqs.filter(function(m){return m.area===a.id;})).slice(0,n).forEach(function(m){q.push(buildFn('mcq',m.id));});
   });
   q=shuffle(q);
-  var tb=shuffle(DATA.tbs.filter(function(t){return t.interactive;})).slice(0,3).map(function(t){return buildFn('tbs',t.id);});
+  var tb=shuffle(DATA.tbs.filter(function(t){return t.interactive;})).slice(0,5).map(function(t){return buildFn('tbs',t.id);});
   return q.concat(tb);
 }
 function startMock(){
   var q=mockQueue(buildEnc);if(!q.length){toast('문항이 없어요');return;}
-  SESS={queue:q,i:0,title:'📝 모의고사',mode:'mock',aid:null,correct:0,wrong:0,fame:0,funds:0,boss:null,commission:null,mock:true,mk:{mcqC:0,mcqT:0,tbsC:0,tbsT:0,area:{}}};
+  SESS={queue:q,i:0,title:'📝 모의고사',mode:'mock',aid:null,correct:0,wrong:0,fame:0,funds:0,boss:null,commission:null,mock:true,mk:{mcqC:0,mcqT:0,tbsC:0,tbsT:0,area:{}},startT:Date.now()};
   go('voyage');
 }
 const ROUTES={title:titleScreen,chart:chartScreen,harbor:harborScreen,voyage:voyageScreen,patron:patronScreen,trade:tradeScreen,codex:codexScreen,captain:captainScreen,port:portScreen,settings:settingsScreen,study:studyScreen,daily:dailyScreen,finance:financeScreen,tbs:tbsListScreen};
