@@ -1,0 +1,64 @@
+{
+ "name": "BAR Capital · Analyst Terminal",
+ "short_name": "BAR Capital",
+ "description": "USCPA BAR 복습 — 금융 애널리스트 터미널 (EN/日本語/한국어, 오프라인)",
+ "id": "./",
+ "start_url": "./",
+ "scope": "./",
+ "display": "standalone",
+ "display_override": [
+  "standalone",
+  "minimal-ui"
+ ],
+ "background_color": "#080b14",
+ "theme_color": "#0b1322",
+ "lang": "ko",
+ "dir": "auto",
+ "categories": [
+  "education",
+  "games"
+ ],
+ "icons": [
+  {
+   "src": "icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "icon-maskable-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "maskable"
+  }
+ ],
+ "screenshots": [
+  {
+   "src": "screenshot.png",
+   "sizes": "1080x1920",
+   "type": "image/png",
+   "form_factor": "narrow",
+   "label": "BAR Capital"
+  }
+ ],
+ "shortcuts": [
+  {
+   "name": "복습 세션 / Review",
+   "short_name": "복습",
+   "url": "./?action=review",
+   "icons": [
+    {
+     "src": "icon-192.png",
+     "sizes": "192x192",
+     "type": "image/png"
+    }
+   ]
+  }
+ ]
+}
