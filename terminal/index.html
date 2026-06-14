@@ -494,6 +494,16 @@ svg.mc{width:100%;height:30px;display:block;opacity:.95}
 .gate-l{flex:1;font-size:14px;color:var(--ink2)}
 .gate-v{font-family:var(--mono);font-size:12px;font-variant-numeric:tabular-nums}
 .gate-v.ok{color:var(--up)} .gate-v.warn{color:var(--amber2)} .gate-v.no{color:var(--down)}
+/* TBS / case-file interactive model */
+.tbs-form{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+.tbs-field{background:#0a0f1c;border:1px solid var(--line2);border-radius:9px;padding:10px 12px;transition:var(--d1)}
+.tbs-lab{font-size:13px;color:var(--ink2);margin-bottom:7px;line-height:1.45}
+.tbs-in{width:100%;background:#070a12;border:1px solid var(--line2);border-radius:7px;color:var(--amber2);font-family:var(--mono);font-size:14px;padding:9px 11px;font-variant-numeric:tabular-nums}
+.tbs-in:focus{outline:none;border-color:var(--gold-d);box-shadow:0 0 0 1px rgba(201,168,106,.35)}
+.tbs-field.tf-ok{border-color:var(--up-d);background:rgba(47,208,124,.06)}
+.tbs-field.tf-no{border-color:var(--down-d);background:rgba(255,93,93,.05)}
+.tbs-ans{margin-top:8px;font-size:12.5px;color:var(--ink2);line-height:1.55}
+.tbs-ans b{color:var(--amber2);font-family:var(--mono)}
 </style>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#0b1322">
@@ -686,7 +696,12 @@ const I18N={en:{},ja:{}};
   ['체결량 ≥ 100','Executions ≥ 100','約定数 ≥ 100'],['세션 ≥ 5','Sessions ≥ 5','セッション ≥ 5'],
   ['약점 데스크 0','Weak desks = 0','弱点デスク = 0'],['최고 연승 ≥ 8','Best streak ≥ 8','最高連勝 ≥ 8'],
   ['손실 귀속 기록','Loss attribution logged','損失要因の記録'],['컨빅션 OCI < 15%','Conviction OCI < 15%','確信OCI < 15%'],
-  ['실전 준비 완료','Exam-ready','本番準備完了'],['합격권 근접','Near passing','合格圏に接近'],['보강 필요','Needs work','要強化']
+  ['실전 준비 완료','Exam-ready','本番準備完了'],['합격권 근접','Near passing','合格圏に接近'],['보강 필요','Needs work','要強化'],
+  ['모델 채점','Grade model','モデル採点'],['모델 검증 통과','Model verified','モデル検証合格'],['재작업 필요','Rework needed','要再作業'],
+  ['전체 풀이','Full solution','全体解説'],['풀기','Solve','解く'],['랜덤 케이스 세트','Random case set','ランダムケースセット'],
+  ['모의고사','Mock Exam','模擬試験'],['모의 점수(추정)','Est. mock score','模擬スコア(推定)'],['합격권','Passing range','合格圏'],
+  ['더 학습 필요','More study needed','要学習'],['집중 드릴','focus drill','集中ドリル'],['최고','Best','最高'],
+  ['게임 추정치 · AICPA 환산점수 아님','Game estimate · not an AICPA scaled score','ゲーム推定値・AICPA換算スコアではない'],['문항이 없습니다','No questions available','問題がありません']
  ].forEach(function(r){I18N.en[r[0]]=r[1];I18N.ja[r[0]]=r[2];});
 })();
 function t(s){var l=(S&&S.lang)||'ko';if(l==='ko')return s;return (I18N[l]&&I18N[l][s])||s;}
@@ -715,6 +730,7 @@ function fresh(){return {gid:GAME_ID,v:1,lang:'ko',
   edna:{concept:0,calc:0,trap:0,misread:0},   /* loss attribution: lifetime error-type counts */
   conv:{n:0,sure:0,sureWrong:0},              /* conviction calibration → OCI */
   drill:{runs:0},                             /* pre-market drill runs */
+  mockHist:[],                                /* mock exam scaled-score history */
   examDate:null,
   prefs:{sfx:true,motion:true,conv:false}
 };}
@@ -880,6 +896,7 @@ ROUTES.home=function(root){
   qa.append(actBtn('↺ '+t('복습 큐'),'',function(){startReview();}));
   qa.append(actBtn('◷ '+t('리서치 커버리지'),'ghost',function(){go('coverage');}));
   qa.append(actBtn('🔔 '+t('프리마켓 드릴'),'ghost',function(){go('drill');}));
+  qa.append(actBtn('📝 '+t('모의고사'),'',function(){startMock();}));
   left.append(qa);
   g.append(left);
 
@@ -1049,13 +1066,14 @@ function runCmd(raw){
     COVERAGE:'coverage',COVER:'coverage',MODELS:'models',VALUATION:'models',FLAGS:'flags',RISK_:'flags',
     CASES:'cases',TBS:'cases',PLAYBOOKS:'playbooks',NEMONIC:'playbooks',SETTINGS:'settings',SET:'settings',
     TOP:'news',N:'news',NEWS:'news',MSG:'chat',IB:'chat',CHAT:'chat',ECO:'eco',CAL:'eco',CALENDAR:'eco',
-    DRILL:'drill',PREMARKET:'drill',FLASH:'drill',GATE:'gates',GATES:'gates',LIMITS:'gates'};
+    DRILL:'drill',PREMARKET:'drill',FLASH:'drill',GATE:'gates',GATES:'gates',LIMITS:'gates',MOCK:'__mock',EXAM:'__mock'};
   var deskMap={RISK:'BAR1',CAPM:'BAR2',CAPITAL:'BAR2',COST:'BAR3',FNR:'BAR4',REPORTING:'BAR4',GOV:'BAR5',MKT:'FIN',MARKETS:'FIN'};
   if(s==='HELP'){toast('HOME · REVIEW · TRADE · COVERAGE · MODELS · FLAGS · CASES · TOP · MSG · ECO · '+Object.keys(deskMap).slice(0,6).join(' · '));return;}
   if(s.indexOf('LANG ')===0){var l=s.slice(5).toLowerCase();if(['ko','en','ja'].indexOf(l)>=0){setLang(l);return;}}
   if(deskMap[s]){go('desk',deskMap[s]);return;}
   if(map[s]==='__review'){startReview();return;}
   if(map[s]==='__trade'){startSession({scope:'all',mode:'mcq',n:10});return;}
+  if(map[s]==='__mock'){startMock();return;}
   if(map[s]){go(map[s]);return;}
   toast('? '+esc(s)+' — '+t('HELP 입력 → 명령어'));
 }
@@ -1150,6 +1168,50 @@ function startReview(){
   var due=dueMcqs();if(!due.length){toast(t('복습할 항목이 없습니다 — 더 체결해 보세요'));return;}
   startSession({queue:sample(due,Math.min(12,due.length)).map(function(m){return {kind:'mcq',q:m};}),scope:'review'});
 }
+/* MOCK EXAM ("Market Close") — blueprint-weighted MCQ + interactive TBS, timed, scaled-score estimate */
+let _mockClock=null;
+function mockClockStr(){var s=Math.max(0,Math.floor((Date.now()-((SESS&&SESS.startT)||Date.now()))/1000));return Math.floor(s/60)+':'+('0'+(s%60)).slice(-2);}
+function mockClockTick(){var e=document.getElementById('mock-clock');if(!e||!SESS||!SESS.mock){if(_mockClock){clearInterval(_mockClock);_mockClock=null;}return;}e.textContent='⏱ '+mockClockStr();}
+function mockQueue(){
+  function mid(w){var m=(w||'').match(/(\d+)\D+(\d+)/);return m?(+m[1]+ +m[2])/2:15;}
+  var per={},tot=0;(DATA.areas||[]).forEach(function(a){var x=mid(a.weight);per[a.id]=x;tot+=x;});
+  var TARGET=24,q=[];
+  (DATA.areas||[]).forEach(function(a){var n=Math.max(2,Math.round(TARGET*per[a.id]/tot));
+    sample(MCQ_BY[a.id]||[],n).forEach(function(m){q.push({kind:'mcq',q:m});});});
+  q=shuffle(q);
+  var tbs=sample((DATA.tbs||[]).filter(function(t){return t.interactive;}),5).map(function(t){return {kind:'tbs',tbs:t};});
+  return q.concat(tbs);
+}
+function startMock(){
+  var q=mockQueue();if(!q.length){toast(t('문항이 없습니다'));return;}
+  SESS={opt:{scope:'mock'},queue:q,i:0,fills:0,wins:0,pnl0:S.book,newCov:0,rankBefore:rankOf(S.xp).idx,
+    edna:{concept:0,calc:0,trap:0,misread:0},mock:true,mk:{mcqC:0,mcqT:0,tbsC:0,tbsT:0,area:{}},startT:Date.now()};
+  go('session');
+}
+function mockResultPanel(mk,comp,mcqP,tbsP){
+  var pass=comp>=75;
+  var mins=(SESS&&SESS.startT)?Math.round((Date.now()-SESS.startT)/60000):null,u=(S.lang==='ja'?'分':S.lang==='en'?' min':'분');
+  var civ=function(c,a){if(!a)return 0;var p=(c+1)/(a+2);return p*(1-p)/(a+2);};
+  var ci=Math.min(30,Math.max(3,Math.round(196*Math.sqrt(0.25*civ(mk.mcqC,mk.mcqT)+0.25*civ(mk.tbsC,mk.tbsT)))));
+  var best=(S.mockHist||[]).reduce(function(m,h){return Math.max(m,h.comp);},0);
+  var wrap=el('div');wrap.style.marginTop='14px';
+  var p=el('div','panel '+(pass?'gild':''));
+  p.append(panelHead(t('모의 점수(추정)'),'SCALED EST',comp+' ±'+ci));
+  var b=el('div','panel-b');
+  b.append(el('div','perf-hero','<div class="perf-aum" style="color:'+(pass?'var(--up)':'var(--down)')+';filter:none">'+comp+' <small style="font-size:14px;color:var(--muted)">±'+ci+'</small></div>'+
+    '<div class="perf-sub">'+(pass?t('합격권'):t('더 학습 필요'))+' · MCQ '+mcqP+'% ('+mk.mcqC+'/'+mk.mcqT+') · TBS '+tbsP+'% ('+mk.tbsC+'/'+mk.tbsT+')'+(mins!=null?' · ⏱ '+mins+u:'')+'</div>'));
+  var ar=mk.area||{},weak=null,weakP=101;
+  var aw=el('div');aw.style.marginTop='8px';
+  (DATA.areas||[]).forEach(function(a){var s=ar[a.id]||{c:0,a:0};var pct=s.a?Math.round(s.c/s.a*100):0;if(s.a&&pct<weakP){weakP=pct;weak=a.id;}
+    var low=s.a&&pct<70;
+    aw.append(el('div','gate-row','<span class="gate-l" style="flex:none;min-width:54px;font-family:var(--mono);font-size:11px;color:'+a.color+'">'+(DESK[a.id]?DESK[a.id].sym:a.id)+'</span>'+
+      '<div class="bar" style="flex:1"><i style="width:'+pct+'%;background:'+(low?'var(--down)':a.color)+'"></i></div>'+
+      '<span class="gate-v" style="min-width:66px;text-align:right">'+(s.a?pct+'% ('+s.c+'/'+s.a+')':'—')+'</span>'));});
+  b.append(aw);p.append(b);wrap.append(p);
+  if(weak&&weakP<75){var db=actBtn('🎯 '+deskName(weak)+' '+t('집중 드릴'),'solid',function(){startSession({scope:weak,mode:'mcq',n:8});});db.style.marginTop='10px';wrap.append(db);}
+  wrap.append(el('p','sub','※ '+t('게임 추정치 · AICPA 환산점수 아님')+(best?' · '+t('최고')+' '+best:'')));
+  return wrap;
+}
 ROUTES.session=function(root){
   if(!SESS){go('home');return;}
   var step=SESS.queue[SESS.i];
@@ -1158,11 +1220,13 @@ ROUTES.session=function(root){
   var prog=el('div','prog');prog.innerHTML='<i style="width:'+Math.round(SESS.i/SESS.queue.length*100)+'%"></i>';
   var meta=el('span','mono');meta.style.cssText='font-size:11px;color:var(--muted);white-space:nowrap';
   meta.textContent=(SESS.i+1)+' / '+SESS.queue.length;
-  var sp=el('span','streakpill'+(S.streak>=3?' hot':''),'▲ '+S.streak);
+  var sp=el('span','streakpill'+(S.streak>=3?' hot':''),SESS.mock?('<span id="mock-clock">⏱ '+mockClockStr()+'</span>'):('▲ '+S.streak));
   top.append(meta,prog,sp);root.append(top);
+  if(SESS.mock&&!_mockClock)_mockClock=setInterval(mockClockTick,1000);
 
   var card=el('div','panel pad');
   if(step.kind==='mcq')renderMcq(card,step.q);
+  else if(step.kind==='tbs')renderTbsT(card,step.tbs);
   else renderRecall(card,step.t);
   root.append(card);
 
@@ -1224,6 +1288,7 @@ function gradeMcq(card,q,ok,hintUsed,conv){
   card.classList.add(ok?'flash-ok':'flash-no');
   bump('mcq:'+q.id,ok);S.stats.answered++;
   if(conv){S.conv.n++;if(conv==='sure'){S.conv.sure++;if(!ok)S.conv.sureWrong++;}}
+  if(SESS&&SESS.mock&&SESS.mk){SESS.mk.mcqT++;if(ok)SESS.mk.mcqC++;var _o=(SESS.mk.area[q.area]||(SESS.mk.area[q.area]={c:0,a:0}));_o.a++;if(ok)_o.c++;}
   var delta;
   if(ok){S.stats.correct++;S.streak++;S.bestStreak=Math.max(S.bestStreak,S.streak);S.xp++;
     delta=8000+Math.min(S.streak,8)*2500-(hintUsed?6000:0);SESS.wins++;sfx('fill');}
@@ -1239,7 +1304,7 @@ function gradeMcq(card,q,ok,hintUsed,conv){
   var eh='<strong>'+t('정답')+': '+q.answer+'</strong><br>'+md(_e||q.explanation)+(_e?'<div class="en-orig">EN · '+md(q.explanation)+'</div>':'');
   card.append(el('div','note','<div class="nh">'+t('포스트 트레이드 노트')+'</div><div class="body">'+eh+'</div>'));
 
-  if(ok)nextButton(card);else lossAttribution(card);
+  if(ok||(SESS&&SESS.mock))nextButton(card);else lossAttribution(card);
   renderTop();save();
 }
 /* loss attribution (Error DNA) — classify WHY an MCQ was missed; builds a weakness map */
@@ -1298,6 +1363,59 @@ function gradeRecall(tp,ok){
   else{S.streak=0;sfx('no');}
   SESS.fills++;if(ok)SESS.wins++;renderTop();save();advance();
 }
+/* TBS / Case File — interactive graded model (num tolerance + select) */
+function tbsFmt(v){if(typeof v==='number'){return (Math.abs(v)>=1000||Number.isInteger(v))?v.toLocaleString('en-US'):String(v);}return String(v);}
+function tbsGrade(f,raw){
+  if(f.type==='select')return (raw||'')===f.answer;
+  var s=(raw==null?'':String(raw)).trim();if(s==='')return false;
+  s=s.replace(/[$,%\s]/g,'');var neg=false;
+  if(/^\(.*\)$/.test(s)){neg=true;s=s.replace(/[()]/g,'');}
+  s=s.replace(/^\+/,'');var v=parseFloat(s);if(isNaN(v))return false;if(neg)v=-v;
+  var tol=(f.tol==null?0:f.tol);return Math.abs(v-f.answer)<=tol+1e-9;
+}
+function renderTbsT(card,tb){
+  var it=tb.interactive,pid=String(tb.id);
+  var mh=el('div','ticket-meta');
+  mh.innerHTML='<span class="tag desk" style="--ac:'+deskColor(tb.area)+'">'+(DESK[tb.area]?DESK[tb.area].sym:(tb.area||'CASE'))+'</span>'+
+    '<span class="tag">'+esc(pid)+'</span><span class="tag">CASE · MODEL</span>';
+  card.append(mh);
+  if(!it){card.append(el('div','qtext',md(CT('tbs',pid,'body')||tb.body)));nextButton(card);return;}
+  var _tp=CT('tbsx',pid,'prompt'),ph=md(_tp||it.prompt)+(_tp?'<div class="en-orig">EN · '+md(it.prompt)+'</div>':'');
+  card.append(el('div','qtext',ph));
+  var _labs=CT('tbsx',pid,'labels')||null,_opts=CT('tbsx',pid,'options')||{};
+  var form=el('div','tbs-form'),inputs=[];
+  it.fields.forEach(function(f,fi){
+    var lab=(_labs&&_labs[fi])||f.label;
+    var row=el('div','tbs-field');row.append(el('div','tbs-lab',esc(lab)));
+    var inp;
+    if(f.type==='select'){inp=el('select','tbs-in');var o0=document.createElement('option');o0.value='';o0.textContent='—';inp.append(o0);
+      (f.options||[]).forEach(function(o){var op=document.createElement('option');op.value=o;op.textContent=_opts[o]||o;inp.append(op);});}
+    else{inp=el('input','tbs-in');inp.type='text';inp.setAttribute('inputmode','decimal');inp.placeholder='—';}
+    inp.setAttribute('aria-label',lab);row.append(inp);inputs.push(inp);form.append(row);
+  });
+  card.append(form);
+  var submit=el('button','btn solid lg','▣ '+t('모델 채점'));submit.style.marginTop='14px';
+  submit.onclick=function(){sfx('sel');
+    var correct=0;
+    it.fields.forEach(function(f,idx){
+      var ok=tbsGrade(f,inputs[idx].value);if(ok)correct++;
+      inputs[idx].setAttribute('disabled','');inputs[idx].parentNode.classList.add(ok?'tf-ok':'tf-no');
+      var ansDisp=(f.type==='select')?(_opts[f.answer]||f.answer):tbsFmt(f.answer);
+      inputs[idx].parentNode.append(el('div','tbs-ans',(ok?'✓ ':'✗ ')+t('정답')+': <b>'+esc(ansDisp)+'</b>'+(f.explain?' <span class="muted">— '+esc(f.explain)+'</span>':'')));
+    });
+    var total=it.fields.length,pass=correct>=Math.ceil(total*0.7);submit.remove();
+    if(pass)card.classList.add('flash-ok');else card.classList.add('flash-no');
+    bump('tbs:'+pid,pass);S.stats.answered++;if(pass)S.stats.correct++;SESS.fills++;if(pass)SESS.wins++;
+    if(SESS&&SESS.mock&&SESS.mk){SESS.mk.tbsT++;if(pass)SESS.mk.tbsC++;var o=(SESS.mk.area[tb.area]||(SESS.mk.area[tb.area]={c:0,a:0}));o.a++;if(pass)o.c++;}
+    var ban=el('div','fill-banner '+(pass?'ok':'no'));
+    ban.innerHTML='<span>'+(pass?'● '+t('모델 검증 통과'):'○ '+t('재작업 필요'))+'</span><span class="pl num-pop">'+correct+' / '+total+'</span>';
+    card.append(ban);
+    var _tb=CT('tbs',pid,'body'),bh='<strong>'+t('전체 풀이')+'</strong><br>'+md(_tb||tb.body)+(_tb?'<div class="en-orig">EN · '+md(tb.body)+'</div>':'');
+    card.append(el('div','note','<div class="nh">'+t('포스트 트레이드 노트')+'</div><div class="body">'+bh+'</div>'));
+    renderTop();save();nextButton(card);
+  };
+  card.append(submit);
+}
 function nextButton(card){
   var row=el('div');row.style.cssText='text-align:right;margin-top:14px';
   var last=(SESS.i>=SESS.queue.length-1);
@@ -1316,7 +1434,7 @@ ROUTES.result=function(root){
   if(promoted){sfx('promote');goldBurst();}
 
   var head=el('div');head.style.marginBottom='14px';
-  head.innerHTML='<p class="eyebrow">'+(SESS.opt.scope==='review'?t('복습 큐'):(SESS.opt.scope==='all'?t('전 데스크 혼합'):deskName(SESS.opt.scope)))+'</p>'+
+  head.innerHTML='<p class="eyebrow">'+(SESS.mock?t('모의고사'):(SESS.opt.scope==='review'?t('복습 큐'):(SESS.opt.scope==='all'?t('전 데스크 혼합'):(SESS.opt.scope==='case'?t('케이스 파일'):deskName(SESS.opt.scope)))))+'</p>'+
     '<h1 class="h-disp">'+esc(t('당일 블로터'))+'</h1>';
   root.append(head);
 
@@ -1336,6 +1454,9 @@ ROUTES.result=function(root){
   if(SESS.newCov)b.append(kv(t('신규 커버리지'),'+'+SESS.newCov));
   var rk=kv(t('직급'),rankOf(S.xp).title);rk.classList.add('f');b.append(rk);
   p.append(b);root.append(p);
+  if(SESS.mock&&SESS.mk){var mk=SESS.mk,mcqP=mk.mcqT?Math.round(mk.mcqC/mk.mcqT*100):0,tbsP=mk.tbsT?Math.round(mk.tbsC/mk.tbsT*100):0,comp=Math.round(0.5*mcqP+0.5*tbsP);
+    if(!S.mockHist)S.mockHist=[];S.mockHist.push({d:new Date().toISOString().slice(0,10),comp:comp,mcq:mcqP,tbs:tbsP});if(S.mockHist.length>30)S.mockHist=S.mockHist.slice(-30);save();
+    root.append(mockResultPanel(mk,comp,mcqP,tbsP));}
   var _et=SESS.edna.concept+SESS.edna.calc+SESS.edna.trap+SESS.edna.misread;
   if(_et){var ap=el('div','panel');ap.style.marginTop='14px';ap.append(panelHead(t('손실 귀속'),'ATTRIB',_et+''));
     var ab=el('div','panel-b');ab.append(ednaWidget(SESS.edna));ap.append(ab);root.append(ap);}
@@ -1410,19 +1531,27 @@ ROUTES.playbooks=function(root){
   p.append(b);root.append(p);root.append(backBar(function(){go('home');}));
 };
 ROUTES.cases=function(root){
-  simpleHead(root,t('케이스 파일'),'CASE FILES',(DATA.tbs||[]).length+'');
+  var cases=(DATA.tbs||[]).filter(function(t){return t.interactive;});
+  simpleHead(root,t('케이스 파일'),'CASE FILES · MODELS',(DATA.tbs||[]).length+'');
+  if(cases.length){var hdr=el('div','actrow');hdr.style.marginBottom='6px';
+    hdr.append(actBtn('🎲 '+t('랜덤 케이스 세트'),'solid',function(){
+      startSession({queue:sample(cases,Math.min(5,cases.length)).map(function(t){return {kind:'tbs',tbs:t};}),scope:'case'});}));
+    root.append(hdr);}
   (DATA.tbs||[]).forEach(function(tb){
+    var pid=String(tb.id);
     var p=el('div','panel pad');p.style.marginBottom='10px';
     var prompt=(tb.interactive&&tb.interactive.prompt)||tb.body||tb.title;
-    var pid=String(tb.id);
     p.innerHTML='<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">'+
       '<span class="tag desk" style="--ac:'+deskColor(tb.area)+'">'+(DESK[tb.area]?DESK[tb.area].sym:(tb.area||'CASE'))+'</span>'+
-      '<b style="font-family:var(--serif);font-size:16px">'+esc(CT('tbs',pid,'title')||tb.title)+'</b></div>'+
+      '<b style="font-family:var(--serif);font-size:16px">'+esc(CT('tbs',pid,'title')||tb.title)+'</b>'+
+      (tb.interactive?'<span class="tag" style="margin-left:auto;color:var(--up)">'+tb.interactive.fields.length+' '+t('항목')+'</span>':'')+'</div>'+
       '<div class="note"><div class="nh">'+t('시나리오')+'</div><div class="body">'+md(CT('tbs',pid,'prompt')||prompt)+'</div></div>';
-    var rev=el('button','btn ghost sm',t('모델 답안 보기'));rev.style.marginTop='10px';
+    var row=el('div','actrow');row.style.marginTop='10px';
+    if(tb.interactive)row.append(actBtn('▣ '+t('풀기'),'',function(){startSession({queue:[{kind:'tbs',tbs:tb}],scope:'case'});}));
+    var rev=el('button','btn ghost sm',t('모델 답안 보기'));
     rev.onclick=function(){sfx('sel');rev.remove();
       p.append(el('div','note','<div class="nh">'+t('포스트 트레이드 노트')+'</div><div class="body">'+md(CT('tbs',pid,'body')||tb.body||'—')+'</div>'));};
-    p.append(rev);root.append(p);
+    row.append(rev);p.append(row);root.append(p);
   });
   root.append(backBar(function(){go('home');}));
 };
