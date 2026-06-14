@@ -504,6 +504,7 @@ svg.mc{width:100%;height:30px;display:block;opacity:.95}
 .tbs-field.tf-no{border-color:var(--down-d);background:rgba(255,93,93,.05)}
 .tbs-ans{margin-top:8px;font-size:12.5px;color:var(--ink2);line-height:1.55}
 .tbs-ans b{color:var(--amber2);font-family:var(--mono)}
+.choice .ch-tr{display:block;font-size:12px;color:var(--muted);margin-top:4px;line-height:1.45}
 </style>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#0b1322">
@@ -705,6 +706,8 @@ const I18N={en:{},ja:{}};
  ].forEach(function(r){I18N.en[r[0]]=r[1];I18N.ja[r[0]]=r[2];});
 })();
 function t(s){var l=(S&&S.lang)||'ko';if(l==='ko')return s;return (I18N[l]&&I18N[l][s])||s;}
+/* label for the secondary (translation) block — exam content shows English first, translation second */
+function langLabel(){return (S&&S.lang==='ja')?'日本語':'한국어';}
 function setLang(l){S.lang=l;try{document.documentElement.lang=l;}catch(e){}save();renderTop();buildTape();go(CUR,CURARG);}
 function langBar(){
   var r=el('div');r.style.cssText='display:flex;gap:6px';
@@ -1134,7 +1137,7 @@ function noteModal(tp){
     '<h3>'+esc(CT('topics',tp.num,'name')||tp.name)+'</h3>'+
     '<div class="recall-sub" style="margin-bottom:10px">'+esc(tp.subtopic||'')+'</div>'+
     '<div class="note"><div class="nh">'+t('핵심 포인트')+'</div><div class="body">'+md(CT('topics',tp.num,'kp')||tp.keyPoints)+
-    (CT('topics',tp.num,'kp')?'<div class="en-orig">EN · '+esc(tp.keyPoints)+'</div>':'')+'</div></div>';
+    (CT('topics',tp.num,'kp')?'<div class="en-orig">'+langLabel()+' · '+esc(CT('topics',tp.num,'kp'))+'</div>':'')+'</div></div>';
   var c=el('button','btn ghost full',t('취소'));c.style.marginTop='14px';c.onclick=closeModal;b.append(c);
 }
 
@@ -1243,7 +1246,7 @@ function renderMcq(card,q){
     '<span class="tag">'+symFrom(q.title)+'</span><span class="tag">ORDER TICKET</span>';
   card.append(mh);
   var _q=CT('mcqs',q.id,'question');
-  var qh=md(_q||q.question)+(_q?'<div class="en-orig">EN · '+md(q.question)+'</div>':'');
+  var qh=md(q.question)+(_q?'<div class="en-orig">'+langLabel()+' · '+md(_q)+'</div>':'');
   card.append(el('div','qtext',qh));
 
   var convSel=null;   /* conviction calibration (only when enabled) */
@@ -1261,8 +1264,8 @@ function renderMcq(card,q){
   var wrap=el('div','choices');var keys=['A','B','C','D'];var _tc=CT('mcqs',q.id,'choices');var hintUsed=false;
   keys.forEach(function(k){
     if(q.choices[k]==null)return;
-    var txt=(_tc&&_tc[k])||q.choices[k];
-    var c=el('button','choice','<span class="k">'+k+'</span><span>'+esc(txt)+'</span>');
+    var ten=q.choices[k],ttr=_tc&&_tc[k];
+    var c=el('button','choice','<span class="k">'+k+'</span><span>'+esc(ten)+((ttr&&ttr!==ten)?'<span class="ch-tr">'+esc(ttr)+'</span>':'')+'</span>');
     c.dataset.k=k;
     c.onclick=function(){
       if(c.getAttribute('disabled'))return;
@@ -1301,7 +1304,7 @@ function gradeMcq(card,q,ok,hintUsed,conv){
   card.append(ban);
 
   var _e=CT('mcqs',q.id,'explanation');
-  var eh='<strong>'+t('정답')+': '+q.answer+'</strong><br>'+md(_e||q.explanation)+(_e?'<div class="en-orig">EN · '+md(q.explanation)+'</div>':'');
+  var eh='<strong>'+t('정답')+': '+q.answer+'</strong><br>'+md(q.explanation)+(_e?'<div class="en-orig">'+langLabel()+' · '+md(_e)+'</div>':'');
   card.append(el('div','note','<div class="nh">'+t('포스트 트레이드 노트')+'</div><div class="body">'+eh+'</div>'));
 
   if(ok||(SESS&&SESS.mock))nextButton(card);else lossAttribution(card);
@@ -1338,8 +1341,8 @@ function renderRecall(card,tp){
     '<span class="tag">'+symFrom(tp.subtopic||tp.name)+'</span><span class="tag">RESEARCH NOTE</span>';
   card.append(mh);
   card.append(el('div',null,'<p class="muted" style="font-size:13px;margin:2px 0 0">'+esc(t('이 종목의 핵심 논지를 떠올려 보세요'))+'</p>'+
-    '<div class="recall-name">'+esc(CT('topics',tp.num,'name')||tp.name)+'</div>'+
-    (CT('topics',tp.num,'name')?'<div class="recall-sub">EN · '+esc(tp.name)+'</div>':'')+
+    '<div class="recall-name">'+esc(tp.name)+'</div>'+
+    (CT('topics',tp.num,'name')?'<div class="recall-sub">'+langLabel()+' · '+esc(CT('topics',tp.num,'name'))+'</div>':'')+
     '<div class="recall-sub">'+esc(tp.subtopic||'')+'</div>'));
 
   var flip=el('div','flip');
@@ -1347,7 +1350,7 @@ function renderRecall(card,tp){
   show.onclick=function(){sfx('sel');
     flip.innerHTML='';
     flip.append(el('div','note','<div class="nh">'+t('핵심 포인트')+'</div><div class="body">'+
-      md(CT('topics',tp.num,'kp')||tp.keyPoints)+(CT('topics',tp.num,'kp')?'<div class="en-orig">EN · '+esc(tp.keyPoints)+'</div>':'')+'</div>'));
+      md(tp.keyPoints)+(CT('topics',tp.num,'kp')?'<div class="en-orig">'+langLabel()+' · '+esc(CT('topics',tp.num,'kp'))+'</div>':'')+'</div>'));
     var row=el('div','actrow');row.style.marginTop='12px';
     var got=el('button','btn up','✓ '+t('기억해냈다'));
     var miss=el('button','btn down','✕ '+t('놓쳤다'));
@@ -1380,7 +1383,7 @@ function renderTbsT(card,tb){
     '<span class="tag">'+esc(pid)+'</span><span class="tag">CASE · MODEL</span>';
   card.append(mh);
   if(!it){card.append(el('div','qtext',md(CT('tbs',pid,'body')||tb.body)));nextButton(card);return;}
-  var _tp=CT('tbsx',pid,'prompt'),ph=md(_tp||it.prompt)+(_tp?'<div class="en-orig">EN · '+md(it.prompt)+'</div>':'');
+  var _tp=CT('tbsx',pid,'prompt'),ph=md(it.prompt)+(_tp?'<div class="en-orig">'+langLabel()+' · '+md(_tp)+'</div>':'');
   card.append(el('div','qtext',ph));
   var _labs=CT('tbsx',pid,'labels')||null,_opts=CT('tbsx',pid,'options')||{};
   var form=el('div','tbs-form'),inputs=[];
@@ -1410,7 +1413,7 @@ function renderTbsT(card,tb){
     var ban=el('div','fill-banner '+(pass?'ok':'no'));
     ban.innerHTML='<span>'+(pass?'● '+t('모델 검증 통과'):'○ '+t('재작업 필요'))+'</span><span class="pl num-pop">'+correct+' / '+total+'</span>';
     card.append(ban);
-    var _tb=CT('tbs',pid,'body'),bh='<strong>'+t('전체 풀이')+'</strong><br>'+md(_tb||tb.body)+(_tb?'<div class="en-orig">EN · '+md(tb.body)+'</div>':'');
+    var _tb=CT('tbs',pid,'body'),bh='<strong>'+t('전체 풀이')+'</strong><br>'+md(tb.body)+(_tb?'<div class="en-orig">'+langLabel()+' · '+md(_tb)+'</div>':'');
     card.append(el('div','note','<div class="nh">'+t('포스트 트레이드 노트')+'</div><div class="body">'+bh+'</div>'));
     renderTop();save();nextButton(card);
   };
