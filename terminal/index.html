@@ -498,6 +498,19 @@ svg.mc{width:100%;height:30px;display:block;opacity:.95}
 .elim-stat .es-l{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .elim-stat .es-v{font-size:15px;color:var(--cyan)}
 .elim-stat .es-v small{color:var(--muted)} .elim-stat .es-warn{color:var(--down)}
+/* PMD diagnostic */
+.pmd-legend{font-family:var(--mono);font-size:11px;line-height:1.7;color:var(--ink2);background:#0a0f1c;border:1px solid var(--line2);border-radius:8px;padding:10px 13px;margin-bottom:4px}
+.pmd-legend .pl-hi{color:var(--up)} .pmd-legend .pl-lo{color:var(--amber2)}
+.pmd-class{font-family:var(--serif);font-size:clamp(20px,4vw,26px);color:var(--gold2);letter-spacing:.01em}
+.pmd-facts{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.pf{display:flex;flex-direction:column;gap:2px;background:#0a0f1c;border:1px solid var(--line);border-radius:7px;padding:6px 11px;min-width:72px}
+.pf-k{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.pf-v{font-family:var(--mono);font-size:14px;color:var(--ink)}
+.pmd-debuff{margin-top:10px;border:1px solid var(--down);border-left:3px solid var(--down);border-radius:8px;background:rgba(229,72,77,.08);padding:11px 14px}
+.pmd-debuff .pd-h{font-family:var(--mono);font-size:13px;letter-spacing:.04em;color:var(--down);font-weight:700}
+.pmd-debuff .pd-b{font-size:13px;color:var(--ink2);line-height:1.5;margin-top:5px}
+.pmd-verdict{margin-top:12px;font-family:var(--mono);font-size:13px;line-height:1.6;color:var(--ink);background:#0a0f1c;border:1px solid var(--gold-d);border-radius:8px;padding:11px 14px}
+.pmd-chip{display:block;width:100%;margin-top:12px;font-family:var(--mono);font-size:12px;letter-spacing:.04em;color:var(--down);background:rgba(229,72,77,.10);border:1px solid var(--down);border-radius:8px;padding:9px 12px;cursor:pointer;text-align:left}
 /* pre-market drill */
 .drill-card .drill-meta{display:flex;gap:8px;margin-bottom:10px}
 .drill-q{font-family:var(--serif);font-size:clamp(18px,3.8vw,24px);color:var(--ink);line-height:1.32;margin:6px 0}
@@ -728,7 +741,38 @@ const I18N={en:{},ja:{}};
   ['MCQ 채널 ≥ 75%','MCQ channel ≥ 75%','MCQチャネル ≥ 75%'],
   ['미풀이 우선','Unseen first','未着手優先'],
   ['미풀이 문항이 없습니다 — 모두 한 번씩 풀었어요','No unseen items — you have attempted them all.','未着手の問題はありません — すべて一度は解きました。'],
-  ['오답 소거 정확도','Distractor-elimination accuracy','誤答消去の正確度']
+  ['오답 소거 정확도','Distractor-elimination accuracy','誤答消去の正確度'],
+  ['정체 진단','Plateau Diagnostic','停滞診断'],['HIGH 신뢰','HIGH reliability','高信頼'],['LOW 신뢰','LOW reliability','低信頼'],
+  ['총점·천장·포화·전환 — 상태 결정','Total / ceiling / saturation / conversion — drive state','総点・天井・飽和・転換 — 状態を決定'],
+  ['영역·문제유형 밴드 — 순위만, 단독 판정 아님','Area / item bands — rank only, never decide alone','領域・項目バンド — 順位のみ、単独判定不可'],
+  ['성적표 입력','Report input','成績表の入力'],['점수','Score','スコア'],
+  ['점수 이력(쉼표)','Score history (comma)','スコア履歴(カンマ)'],['컨디션 제외(쉼표)','Condition outliers (comma)','コンディション除外(カンマ)'],
+  ['항목','Item','項目'],['약점','Weaker','弱い'],['비슷','Comparable','同程度'],['강점','Stronger','強い'],
+  ['문제은행 포화','Bank saturation','問題バンク飽和'],['전환격차(드릴−실전)','Conversion delta (drill − live)','転換ギャップ(ドリル−実戦)'],
+  ['라이브 데이터로 배분·포화·전환 채우기','Fill allocation / saturation / conversion from live data','ライブデータで配分・飽和・転換を入力'],
+  ['진단 프로필','Diagnostic profile','診断プロファイル'],['천장','Ceiling','天井'],['갭','gap','ギャップ'],['정체','Plateau','停滞'],
+  ['예','Yes','はい'],['아니오','No','いいえ'],['분산','Spread','分散'],['역배분','Inverted allocation','逆配分'],
+  ['이미 서 있는 벽을 보강했습니다 — 강점 영역에 노력이 쏠리고 최대 레버 약점은 방치. 처방: 추가하지 말고 재배분.','You fortified the wall already standing — effort skews to the already-strong area while the biggest-lever weak area is neglected. Prescription: reallocate, do not add.','すでに立っている壁を補強した — 努力が既に強い領域に偏り、最大レバーの弱点が放置されている。処方:追加せず再配分せよ。'],
+  ['볼륨은 수확체감 — 더 풀기를 끄고 방법 전환(소거·컨빅션·오답분석)으로.','Volume has diminishing returns — disable grinding and switch method (elimination, conviction, error analysis).','ボリュームは収穫逓減 — 反復を止め方法転換(消去・確信度・誤答分析)へ。'],
+  ['전환 게이트','Conversion gate','転換ゲート'],
+  ['드릴 정확도가 실전으로 전환되지 않음 — 타임드·혼합·미풀이 실전 항목으로 전이를 증명해야 함.','Drill accuracy is not transferring to live — prove transfer on timed, mixed, unseen live items.','ドリル正答率が実戦に転換されていない — タイムド・混合・未着手の実戦項目で転移を証明せよ。'],
+  ['레버 순위','Lever ranking','レバー順位'],['처방','Prescription','処方'],['레버','Lever','レバー'],['방식','Mode','方式'],['윈도우','Window','ウィンドウ'],
+  ['방법(볼륨 비활성)','Method (volume disabled)','方法(ボリューム無効)'],
+  ['LOW 신뢰 밴드는 방향일 뿐 — 막대는 방향, 갭이 진실','LOW-tier bands are direction only — the bar is direction, the gap is truth','低信頼バンドは方向のみ — バーは方向、ギャップが真実'],
+  ['역배분 감지 — 진단 보기','Inverted allocation detected — open diagnostic','逆配分を検出 — 診断を見る'],
+  ['컨디션 점검','Condition check','コンディション点検'],
+  ['점수가 천장보다 크게 낮음 — 먼저 컨디션 실패(수면·상태)를 배제하고 깨끗한 응시로 재진단.','Score far below ceiling — first rule out condition failure (sleep/state), then re-diagnose on a clean attempt.','スコアが天井を大きく下回る — まずコンディション失敗(睡眠・状態)を排除し、クリーンな受験で再診断。'],
+  ['단일 레버','Single lever','単一レバー'],
+  ['합격선에 근접, 한 영역에 집중 — 그 영역을 외과적으로.','Close to the cut, concentrated in one area — attack it surgically.','合格ラインに近く一領域に集中 — その領域を外科的に。'],
+  ['넓고 얕음','Broad & shallow','広く浅い'],
+  ['합격선 근접하나 약점이 여러 영역에 얕게 퍼짐 — 볼륨은 이미 소진, 방법 전환.','Close to the cut but weakness is spread thin across areas — volume is spent, switch method.','合格ラインに近いが弱点が複数領域に薄く分散 — ボリュームは消尽、方法転換。'],
+  ['깊은 갭','Deep gap','深いギャップ'],
+  ['한 영역이 구조적으로 부족 — 그 도메인 재구축.','One area is structurally deficient — rebuild that domain.','一領域が構造的に不足 — そのドメインを再構築。'],
+  ['기초 재건','Foundational','基礎再建'],
+  ['광범위·구조적 부족 — 기초/방법 재건. 빠른 재응시 아님.','Broad, structural deficiency — rebuild foundation/method. Not a quick retake.','広範・構造的な不足 — 基礎/方法の再建。迅速な再受験ではない。'],
+  ['중립','neither','中立'],['볼륨 OK(포화 아니면)','volume OK (if not saturated)','ボリュームOK(飽和でなければ)'],
+  ['방법','method','方法'],['높음','high','高い'],['가능하나 빠듯','feasible but tight','可能だが厳しい'],
+  ['한 사이클','one full cycle','1サイクル'],['빠른 재응시 아님','not a quick retake','迅速な再受験は不可'],['해제 전까지 보류','blocked until cleared','解除まで保留']
  ].forEach(function(r){I18N.en[r[0]]=r[1];I18N.ja[r[0]]=r[2];});
 })();
 function t(s){var l=(S&&S.lang)||'ko';if(l==='ko')return s;return (I18N[l]&&I18N[l][s])||s;}
@@ -761,6 +805,7 @@ function fresh(){return {gid:GAME_ID,v:1,lang:'ko',
   elimStat:{items:0,hit:0,tot:0,killed:0},    /* distractor-elimination drill: items, distractors hit / total, answer wrongly killed */
   drill:{runs:0},                             /* pre-market drill runs */
   mockHist:[],                                /* mock exam scaled-score history */
+  diag:null,                                  /* PMD diagnostic report (defaults to fixture on first open) */
   examDate:null,
   prefs:{sfx:true,motion:true,conv:false,elim:false}
 };}
@@ -930,7 +975,9 @@ ROUTES.home=function(root){
   qa.append(actBtn('🔔 '+t('프리마켓 드릴'),'ghost',function(){go('drill');}));
   qa.append(actBtn('📝 '+t('모의고사'),'',function(){startMock();}));
   qa.append(actBtn('🆕 '+t('미풀이 우선'),'ghost',function(){startNovel();}));
+  qa.append(actBtn('🩺 '+t('정체 진단'),'ghost',function(){go('diag');}));
   left.append(qa);
+  if(pmdLiveInverted()){var chip=el('button','pmd-chip','⚠ '+t('역배분 감지 — 진단 보기'));chip.onclick=function(){sfx('sel');go('diag');};left.append(chip);}
   g.append(left);
 
   /* market data panel (right rail) — FUND PERFORMANCE hero */
@@ -1102,7 +1149,7 @@ function runCmd(raw){
     COVERAGE:'coverage',COVER:'coverage',MODELS:'models',VALUATION:'models',FLAGS:'flags',RISK_:'flags',
     CASES:'cases',TBS:'cases',PLAYBOOKS:'playbooks',NEMONIC:'playbooks',SETTINGS:'settings',SET:'settings',
     TOP:'news',N:'news',NEWS:'news',MSG:'chat',IB:'chat',CHAT:'chat',ECO:'eco',CAL:'eco',CALENDAR:'eco',
-    DRILL:'drill',PREMARKET:'drill',FLASH:'drill',GATE:'gates',GATES:'gates',LIMITS:'gates',MOCK:'__mock',EXAM:'__mock',NOVEL:'__novel',NEW:'__novel',UNSEEN:'__novel'};
+    DRILL:'drill',PREMARKET:'drill',FLASH:'drill',GATE:'gates',GATES:'gates',LIMITS:'gates',MOCK:'__mock',EXAM:'__mock',NOVEL:'__novel',NEW:'__novel',UNSEEN:'__novel',DIAG:'diag',DIAGNOSE:'diag',PMD:'diag'};
   var deskMap={RISK:'BAR1',CAPM:'BAR2',CAPITAL:'BAR2',COST:'BAR3',FNR:'BAR4',REPORTING:'BAR4',GOV:'BAR5',MKT:'FIN',MARKETS:'FIN'};
   if(s==='HELP'){toast('HOME · REVIEW · TRADE · COVERAGE · MODELS · FLAGS · CASES · TOP · MSG · ECO · '+Object.keys(deskMap).slice(0,6).join(' · '));return;}
   if(s.indexOf('LANG ')===0){var l=s.slice(5).toLowerCase();if(['ko','en','ja'].indexOf(l)>=0){setLang(l);return;}}
@@ -1243,9 +1290,11 @@ function mockResultPanel(mk,comp,mcqP,tbsP){
   var b=el('div','panel-b');
   b.append(el('div','perf-hero','<div class="perf-aum" style="color:'+(pass?'var(--up)':'var(--down)')+';filter:none">'+comp+' <small style="font-size:14px;color:var(--muted)">±'+ci+'</small></div>'+
     '<div class="perf-sub">'+(pass?t('합격권'):t('더 학습 필요'))+' · MCQ '+mcqP+'% ('+mk.mcqC+'/'+mk.mcqT+') · TBS '+tbsP+'% ('+mk.tbsC+'/'+mk.tbsT+')'+(mins!=null?' · ⏱ '+mins+u:'')+'</div>'));
-  var ar=mk.area||{},weak=null,weakP=101;
+  var ar=mk.area||{},weak=null,weakP=101,weakLev=-1;
   var aw=el('div');aw.style.marginTop='8px';
-  (DATA.areas||[]).forEach(function(a){var s=ar[a.id]||{c:0,a:0};var pct=s.a?Math.round(s.c/s.a*100):0;if(s.a&&pct<weakP){weakP=pct;weak=a.id;}
+  (DATA.areas||[]).forEach(function(a){var s=ar[a.id]||{c:0,a:0};var pct=s.a?Math.round(s.c/s.a*100):0;
+    var wmm=String(a.weight).match(/(\d+)\D+(\d+)/);var wm=wmm?(+wmm[1]+ +wmm[2])/2:15;var lev=s.a?(1-s.c/s.a)*wm:0;
+    if(s.a&&lev>weakLev){weakLev=lev;weakP=pct;weak=a.id;}  /* lever = weight x headroom, not min accuracy (PMD) */
     var low=s.a&&pct<70;
     aw.append(el('div','gate-row','<span class="gate-l" style="flex:none;min-width:54px;font-family:var(--mono);font-size:11px;color:'+a.color+'">'+(DESK[a.id]?DESK[a.id].sym:a.id)+'</span>'+
       '<div class="bar" style="flex:1"><i style="width:'+pct+'%;background:'+(low?'var(--down)':a.color)+'"></i></div>'+
@@ -1750,6 +1799,122 @@ ROUTES.gates=function(root){
   root.append(el('p','sub','● '+esc(verdict)+' ('+pass+'/9)'));
   root.append(backBar(function(){go('home');}));
 };
+/* =========================================================================
+   PMD — Plateau-Misallocation Diagnostic (faithful port of PMD v1.0 spec).
+   Runs on the official AICPA 3 areas (NOT the 5 game desks). HIGH-tier signals
+   (gap/ceiling/saturation/conversion) drive state; LOW-tier band signals RANK only.
+   ========================================================================= */
+const PMD_AREAS=[{id:'I',desks:['BAR1','BAR2','BAR3']},{id:'II',desks:['BAR4']},{id:'III',desks:['BAR5']}];
+const PMD_K={PLATEAU_BAND:2,COLLAPSE_DROP:12,STRUCTURAL_GAP:4,CONVERSION_ARM:0.15};
+const PMD_STEP={Weaker:1.0,Comparable:0.5,Stronger:0.1};
+const PMD_FIXTURE={score:73,cut:75,history:[73,74,74,56,66,73],condition_outliers:[56],
+  areas:[{id:'I',label:'Business Analysis',lo:40,hi:50,band:'Weaker'},
+         {id:'II',label:'Technical Accounting & Reporting',lo:35,hi:45,band:'Stronger'},
+         {id:'III',label:'State & Local Governments',lo:10,hi:20,band:'Weaker'}],
+  item_types:[{id:'MCQ',label:'MCQ',band:'Weaker'},{id:'Sims',label:'Sims',band:'Weaker'}],
+  prep_density:{I:0.05,II:0.90,III:0.30},bank_saturation:true,conversion_delta:0.30};
+const PMD_PROFILE={
+  CONDITION_CHECK:{name:'컨디션 점검',desc:'점수가 천장보다 크게 낮음 — 먼저 컨디션 실패(수면·상태)를 배제하고 깨끗한 응시로 재진단.',mode:'중립',window:'해제 전까지 보류'},
+  SINGLE_LEVER:{name:'단일 레버',desc:'합격선에 근접, 한 영역에 집중 — 그 영역을 외과적으로.',mode:'볼륨 OK(포화 아니면)',window:'높음'},
+  BROAD_SHALLOW:{name:'넓고 얕음',desc:'합격선 근접하나 약점이 여러 영역에 얕게 퍼짐 — 볼륨은 이미 소진, 방법 전환.',mode:'방법',window:'가능하나 빠듯'},
+  DEEP_GAP:{name:'깊은 갭',desc:'한 영역이 구조적으로 부족 — 그 도메인 재구축.',mode:'방법',window:'한 사이클'},
+  FOUNDATIONAL:{name:'기초 재건',desc:'광범위·구조적 부족 — 기초/방법 재건. 빠른 재응시 아님.',mode:'방법',window:'빠른 재응시 아님'}};
+function pmdMedian(a){if(!a.length)return 0;var s=a.slice().sort(function(x,y){return x-y;});var m=s.length>>1;return s.length%2?s[m]:(s[m-1]+s[m])/2;}
+function pmdClassify(R){
+  var cut=R.cut||75, outl=R.condition_outliers||[];
+  var clean=(R.history||[]).filter(function(s){return outl.indexOf(s)<0;});
+  var ceiling=clean.length?Math.max.apply(null,clean):R.score;
+  var ceiling_gap=cut-ceiling;
+  var near=clean.filter(function(x){return ceiling-x<=PMD_K.PLATEAU_BAND;}).length;
+  var plateau=(ceiling<cut)&&(near>=2);
+  var gap_class=(R.score<=cut-PMD_K.COLLAPSE_DROP)?'COLLAPSE':((ceiling_gap>=PMD_K.STRUCTURAL_GAP)?'STRUCTURAL':'MARGINAL');
+  var areas=R.areas||[], its=R.item_types||[];
+  var weaker=areas.filter(function(a){return a.band==='Weaker';});
+  var both_items_weak=its.length>0&&its.every(function(it){return it.band==='Weaker';});
+  var dispersion=(weaker.length>=2||both_items_weak)?'DIFFUSE':'CONCENTRATED';
+  var levers=areas.map(function(a){var w=(a.lo+a.hi)/2;return {id:a.id,label:a.label,band:a.band,wmid:w,lever:w*(PMD_STEP[a.band]||0)};}).sort(function(x,y){return y.lever-x.lever;});
+  var top=levers[0]||null, pd=R.prep_density||{};
+  var med=pmdMedian(areas.map(function(a){return pd[a.id]||0;}));
+  var inverted=!!(top&&top.band==='Weaker'&&(pd[top.id]||0)<=med&&areas.some(function(a){return a.band==='Stronger'&&(pd[a.id]||0)>med;}));
+  var profile=gap_class==='COLLAPSE'?'CONDITION_CHECK':
+    (gap_class==='MARGINAL'?(dispersion==='CONCENTRATED'?'SINGLE_LEVER':'BROAD_SHALLOW'):
+    (dispersion==='CONCENTRATED'?'DEEP_GAP':'FOUNDATIONAL'));
+  return {cut:cut,clean:clean,gap:cut-R.score,ceiling:ceiling,ceiling_gap:ceiling_gap,plateau:plateau,
+    gap_class:gap_class,dispersion:dispersion,levers:levers,top_lever:top,inverted:inverted,profile:profile,
+    overlays:{inverted_allocation:inverted,bank_saturation:!!R.bank_saturation,
+      conversion_gate:(R.conversion_delta!=null&&R.conversion_delta>=PMD_K.CONVERSION_ARM)}};
+}
+/* live game signals aggregated to the 3 AICPA areas (FIN excluded) */
+function pmdLiveAgg(){var out={},tot=0;PMD_AREAS.forEach(function(a){var att=0,n=0,ok=0;
+  a.desks.forEach(function(d){(MCQ_BY[d]||[]).forEach(function(q){var r=S.m['mcq:'+q.id];if(r){att+=r.n;n+=r.n;ok+=r.ok;}});});
+  out[a.id]={att:att,n:n,ok:ok};tot+=att;});return {by:out,tot:tot};}
+function pmdLivePrep(){var g=pmdLiveAgg(),pd={};PMD_AREAS.forEach(function(a){pd[a.id]=g.tot?Math.round(g.by[a.id].att/g.tot*100)/100:0;});return pd;}
+function pmdLiveBand(id){var g=pmdLiveAgg().by[id];if(!g||!g.n)return null;var acc=g.ok/g.n;return acc<0.55?'Weaker':(acc<0.70?'Comparable':'Stronger');}
+function pmdSaturation(){var seen=0,tot=0;(DATA.mcqs||[]).forEach(function(q){if(q.area==='FIN')return;tot++;if(S.m['mcq:'+q.id])seen++;});return tot?seen/tot:0;}
+function pmdConversionDelta(){var mh=S.mockHist||[];if(!mh.length)return null;var k=Math.min(3,mh.length);var mock=mh.slice(-k).reduce(function(s,h){return s+(h.mcq||0);},0)/k/100;var drill=mcqAcc();if(drill<0)return null;return Math.round((drill-mock)*100)/100;}
+function pmdLiveInverted(){ /* quick auto detection from live data for the dashboard chip */
+  var pd=pmdLivePrep(),ar=PMD_FIXTURE.areas.map(function(a){var b=pmdLiveBand(a.id);return {id:a.id,label:a.label,lo:a.lo,hi:a.hi,band:b||a.band};});
+  return pmdClassify({score:75,cut:75,history:[],condition_outliers:[],areas:ar,item_types:[],prep_density:pd,bank_saturation:false,conversion_delta:null}).inverted;
+}
+function pmdParseInts(s){return String(s).split(',').map(function(x){return parseInt(x,10);}).filter(function(n){return !isNaN(n);});}
+function pmdBandLabel(b){return b==='Weaker'?'약점':(b==='Stronger'?'강점':'비슷');}
+function pmdFact(k,v){return '<span class="pf"><span class="pf-k">'+esc(k)+'</span><span class="pf-v">'+esc(v)+'</span></span>';}
+function pmdRow(label,node){var r=el('div','kv');r.innerHTML='<span class="k">'+esc(label)+'</span>';r.append(node);return r;}
+function pmdNum(val,on){var i=el('input','field');i.type='number';i.value=val;i.style.cssText='width:84px;margin:0';i.onchange=function(){on(parseInt(i.value,10)||0);};return i;}
+function pmdTxt(val,on){var i=el('input','field');i.value=val;i.style.cssText='width:160px;margin:0';i.onchange=function(){on(i.value);};return i;}
+function pmdBand(val,on){var sel=el('select','field');sel.style.cssText='width:120px;margin:0';
+  [['Weaker','약점'],['Comparable','비슷'],['Stronger','강점']].forEach(function(o){var op=document.createElement('option');op.value=o[0];op.textContent=t(o[1]);if(o[0]===val)op.selected=true;sel.append(op);});
+  sel.onchange=function(){on(sel.value);};return sel;}
+ROUTES.diag=function(root){
+  simpleHead(root,t('정체 진단'),'PLATEAU · MISALLOCATION DX',null);
+  if(!S.diag)S.diag=JSON.parse(JSON.stringify(PMD_FIXTURE));
+  var R=S.diag;
+  root.append(el('div','pmd-legend','<b class="pl-hi">'+t('HIGH 신뢰')+'</b> '+esc(t('총점·천장·포화·전환 — 상태 결정'))+'<br><b class="pl-lo">'+t('LOW 신뢰')+'</b> '+esc(t('영역·문제유형 밴드 — 순위만, 단독 판정 아님'))));
+  var resHost=el('div');
+  function render(){resHost.innerHTML='';resHost.append(pmdResultPanel(pmdClassify(R)));}
+  var fp=el('div','panel pad');fp.style.marginTop='12px';fp.append(panelHead(t('성적표 입력'),'REPORT',null));
+  var fb=el('div','panel-b');
+  fb.append(pmdRow(t('점수'),pmdNum(R.score,function(v){R.score=v;save();render();})));
+  fb.append(pmdRow(t('점수 이력(쉼표)'),pmdTxt(R.history.join(','),function(v){R.history=pmdParseInts(v);save();render();})));
+  fb.append(pmdRow(t('컨디션 제외(쉼표)'),pmdTxt(R.condition_outliers.join(','),function(v){R.condition_outliers=pmdParseInts(v);save();render();})));
+  R.areas.forEach(function(a){fb.append(pmdRow(t(a.label)+' ('+a.lo+'–'+a.hi+'%)',pmdBand(a.band,function(v){a.band=v;save();render();})));});
+  R.item_types.forEach(function(it){fb.append(pmdRow(t('항목')+' · '+it.label,pmdBand(it.band,function(v){it.band=v;save();render();})));});
+  var sb=el('button','btn sm '+(R.bank_saturation?'solid':'ghost'),R.bank_saturation?'ON':'OFF');
+  sb.onclick=function(){R.bank_saturation=!R.bank_saturation;save();render();sb.textContent=R.bank_saturation?'ON':'OFF';sb.className='btn sm '+(R.bank_saturation?'solid':'ghost');};
+  fb.append(pmdRow(t('문제은행 포화'),sb));
+  fb.append(pmdRow(t('전환격차(드릴−실전)'),pmdTxt((R.conversion_delta==null?'':R.conversion_delta),function(v){var n=parseFloat(v);R.conversion_delta=isNaN(n)?null:n;save();render();})));
+  fp.append(fb);
+  var lf=el('button','btn full','🎮 '+t('라이브 데이터로 배분·포화·전환 채우기'));lf.style.marginTop='10px';
+  lf.onclick=function(){sfx('sel');R.prep_density=pmdLivePrep();R.bank_saturation=pmdSaturation()>=0.85;var cd=pmdConversionDelta();if(cd!=null)R.conversion_delta=cd;
+    PMD_AREAS.forEach(function(a){var b=pmdLiveBand(a.id);var tgt=R.areas.filter(function(x){return x.id===a.id;})[0];if(b&&tgt)tgt.band=b;});save();go('diag');};
+  fp.append(lf);
+  root.append(fp);root.append(resHost);render();
+  root.append(backBar(function(){go('home');}));
+};
+function pmdResultPanel(D){
+  var wrap=el('div');wrap.style.marginTop='14px';var prof=PMD_PROFILE[D.profile]||{};
+  var pc=el('div','panel'+(D.profile==='CONDITION_CHECK'?'':' gild'));
+  pc.append(panelHead(t('진단 프로필'),'PROFILE',D.profile.replace(/_/g,' ')));
+  var pb=el('div','panel-b');
+  pb.append(el('div','pmd-class',esc(t(prof.name||D.profile))));
+  pb.append(el('p','sub',esc(t(prof.desc||''))));
+  pb.append(el('div','pmd-facts',pmdFact(t('천장'),D.ceiling+' ('+t('갭')+' '+D.ceiling_gap+')')+pmdFact(t('정체'),D.plateau?t('예'):t('아니오'))+pmdFact('GAP',D.gap_class)+pmdFact(t('분산'),D.dispersion)));
+  pc.append(pb);wrap.append(pc);
+  var ov=[];
+  if(D.overlays.inverted_allocation)ov.push(['⚠ '+t('역배분'),t('이미 서 있는 벽을 보강했습니다 — 강점 영역에 노력이 쏠리고 최대 레버 약점은 방치. 처방: 추가하지 말고 재배분.')]);
+  if(D.overlays.bank_saturation)ov.push(['🚱 '+t('문제은행 포화'),t('볼륨은 수확체감 — 더 풀기를 끄고 방법 전환(소거·컨빅션·오답분석)으로.')]);
+  if(D.overlays.conversion_gate)ov.push(['🎯 '+t('전환 게이트'),t('드릴 정확도가 실전으로 전환되지 않음 — 타임드·혼합·미풀이 실전 항목으로 전이를 증명해야 함.')]);
+  ov.forEach(function(o){var c=el('div','pmd-debuff');c.innerHTML='<div class="pd-h">'+esc(o[0])+'</div><div class="pd-b">'+esc(o[1])+'</div>';wrap.append(c);});
+  var lp=el('div','panel');lp.style.marginTop='12px';lp.append(panelHead(t('레버 순위'),'XP · ATTACK ORDER',null));
+  var lb=el('div','panel-b');var maxL=Math.max.apply(null,D.levers.map(function(l){return l.lever;}))||1;
+  D.levers.forEach(function(l,i){lb.append(el('div','gate-row','<span class="gate-l" style="flex:none;min-width:120px;font-size:13px">'+(i===0?'🎯 ':'')+esc(t(l.label))+'</span>'+
+    '<div class="bar" style="flex:1"><i style="width:'+Math.round(l.lever/maxL*100)+'%;background:'+(l.band==='Weaker'?'var(--down)':(l.band==='Stronger'?'var(--up)':'var(--amber)'))+'"></i></div>'+
+    '<span class="gate-v" style="min-width:92px;text-align:right">'+t(pmdBandLabel(l.band))+' · '+l.lever.toFixed(1)+'</span>'));});
+  lp.append(lb);wrap.append(lp);
+  wrap.append(el('div','pmd-verdict','<b>'+t('처방')+'</b> · '+t('레버')+' = '+esc(t((D.top_lever&&D.top_lever.label)||'—'))+' · '+t('방식')+' = '+esc(t(D.overlays.bank_saturation?'방법(볼륨 비활성)':(prof.mode||'—')))+' · '+t('윈도우')+' = '+esc(t(prof.window||'—'))));
+  wrap.append(el('p','sub','※ '+t('LOW 신뢰 밴드는 방향일 뿐 — 막대는 방향, 갭이 진실')));
+  return wrap;
+}
 function simpleHead(root,title,eyebrow,rt){
   var h=el('div');h.style.marginBottom='12px';
   h.innerHTML='<p class="eyebrow">'+esc(eyebrow)+(rt?' · '+esc(rt):'')+'</p><h1 class="h-disp">'+esc(title)+'</h1>';
