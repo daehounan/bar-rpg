@@ -1860,9 +1860,9 @@ function pmdParseInts(s){return String(s).split(',').map(function(x){return pars
 function pmdBandLabel(b){return b==='Weaker'?'약점':(b==='Stronger'?'강점':'비슷');}
 function pmdFact(k,v){return '<span class="pf"><span class="pf-k">'+esc(k)+'</span><span class="pf-v">'+esc(v)+'</span></span>';}
 function pmdRow(label,node){var r=el('div','kv');r.innerHTML='<span class="k">'+esc(label)+'</span>';r.append(node);return r;}
-function pmdNum(val,on){var i=el('input','field');i.type='number';i.value=val;i.style.cssText='width:84px;margin:0';i.onchange=function(){on(parseInt(i.value,10)||0);};return i;}
-function pmdTxt(val,on){var i=el('input','field');i.value=val;i.style.cssText='width:160px;margin:0';i.onchange=function(){on(i.value);};return i;}
-function pmdBand(val,on){var sel=el('select','field');sel.style.cssText='width:120px;margin:0';
+function pmdNum(val,on){var i=el('input','field');i.type='number';i.inputMode='numeric';i.value=val;i.style.cssText='width:84px;margin:0;min-height:44px';i.onchange=function(){on(parseInt(i.value,10)||0);};return i;}
+function pmdTxt(val,on){var i=el('input','field');i.value=val;i.style.cssText='width:160px;margin:0;min-height:44px';i.onchange=function(){on(i.value);};return i;}
+function pmdBand(val,on){var sel=el('select','field');sel.style.cssText='width:120px;margin:0;min-height:44px';
   [['Weaker','약점'],['Comparable','비슷'],['Stronger','강점']].forEach(function(o){var op=document.createElement('option');op.value=o[0];op.textContent=t(o[1]);if(o[0]===val)op.selected=true;sel.append(op);});
   sel.onchange=function(){on(sel.value);};return sel;}
 ROUTES.diag=function(root){
