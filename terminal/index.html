@@ -260,14 +260,16 @@ textarea.field{min-height:120px;resize:vertical;white-space:pre-wrap;word-break:
   .topbar{gap:9px;padding:10px 12px}
   .stat.hide-s,.mkt-open{display:none}
   #screen{padding:14px 12px 36px}
-  /* mobile calm-mode: Samsung/Android GPUs strobe the whole screen on mix-blend-mode
-     grain + blurred aura + animated background-clip:text shimmer. Kill those on phones
-     (desktop keeps the lavish layer). Fixes intense first-paint flicker on Galaxy. */
-  #grain,#aura,#dust{display:none !important}
-  .shine,.h-disp .au{animation:none !important;background:none !important;-webkit-text-fill-color:var(--gold2) !important;color:var(--gold2) !important}
-  .panel::after{display:none}
-  .gild{animation:none}
-  #boot .boot-bg,#boot .scanline{display:none}
+  /* mobile calm-mode (DECISIVE): Samsung/Android GPUs strobe the whole screen from the
+     stacked decorative layers (mix-blend grain, blurred aura, masked animated market wall,
+     background-clip:text shimmer, will-change layer promotion). On phones, remove every
+     fixed decorative layer AND stop every animation + layer promotion. Desktop keeps the
+     full lavish layer. Functional transitions (boot fade, hover) are untouched. */
+  #grain,#aura,#dust,#mkt-bg{display:none !important}
+  *{animation:none !important;will-change:auto !important}
+  .tape-row{transform:none !important}
+  .shine,.h-disp .au{background:none !important;-webkit-text-fill-color:var(--gold2) !important;color:var(--gold2) !important}
+  #boot .boot-bg,#boot .scanline{display:none !important}
 }
 @media(max-width:420px){ .rankchip .lv{display:none} .crest .sb{display:none} }
 
