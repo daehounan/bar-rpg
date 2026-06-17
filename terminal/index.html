@@ -260,6 +260,14 @@ textarea.field{min-height:120px;resize:vertical;white-space:pre-wrap;word-break:
   .topbar{gap:9px;padding:10px 12px}
   .stat.hide-s,.mkt-open{display:none}
   #screen{padding:14px 12px 36px}
+  /* mobile calm-mode: Samsung/Android GPUs strobe the whole screen on mix-blend-mode
+     grain + blurred aura + animated background-clip:text shimmer. Kill those on phones
+     (desktop keeps the lavish layer). Fixes intense first-paint flicker on Galaxy. */
+  #grain,#aura,#dust{display:none !important}
+  .shine,.h-disp .au{animation:none !important;background:none !important;-webkit-text-fill-color:var(--gold2) !important;color:var(--gold2) !important}
+  .panel::after{display:none}
+  .gild{animation:none}
+  #boot .boot-bg,#boot .scanline{display:none}
 }
 @media(max-width:420px){ .rankchip .lv{display:none} .crest .sb{display:none} }
 
