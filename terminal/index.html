@@ -750,6 +750,10 @@ const I18N={en:{},ja:{}};
   ['완벽한 소거','Clean elimination','完全消去'],['정답을 소거했습니다','You ruled out the correct answer','正解を消去しました'],
   ['MCQ 채널 ≥ 75%','MCQ channel ≥ 75%','MCQチャネル ≥ 75%'],
   ['미풀이 우선','Unseen first','未着手優先'],['고효율 드릴','High-yield drill','高効率ドリル'],
+  ['전이 테스트할 드릴-정답 문항이 부족 — 더 풀어 정답을 쌓으세요','Not enough drill-correct items to test transfer — build up more correct answers first','転移テスト用のドリル正答が不足 — まず正答を増やしてください'],
+  ['전이 유지','Transfer holds','転移維持'],['드릴 정답 → 실전','Drill-correct → live','ドリル正答→実戦'],
+  ['전이 유지 — 연속','Transfer held — streak','転移維持 — 連続'],['게이트 해제','gate cleared','ゲート解除'],
+  ['드릴 정답이 실전으로 전이되지 않음 — 콜드·혼합·무힌트에서 무너졌습니다. 무너진 문항을 다시 보세요.','Drill-correct answers did not transfer to live — they collapsed under cold/mixed/no-hint conditions. Revisit the items that broke.','ドリル正答が実戦に転移せず — コールド・混合・ノーヒントで崩れました。崩れた問題を見直してください。'],
   ['미풀이 문항이 없습니다 — 모두 한 번씩 풀었어요','No unseen items — you have attempted them all.','未着手の問題はありません — すべて一度は解きました。'],
   ['오답 소거 정확도','Distractor-elimination accuracy','誤答消去の正確度'],
   ['정체 진단','Plateau Diagnostic','停滞診断'],['HIGH 신뢰','HIGH reliability','高信頼'],['LOW 신뢰','LOW reliability','低信頼'],
@@ -813,6 +817,7 @@ function fresh(){return {gid:GAME_ID,v:1,lang:'ko',
   edna:{concept:0,calc:0,trap:0,misread:0},   /* loss attribution: lifetime error-type counts */
   conv:{n:0,sure:0,sureWrong:0},              /* conviction calibration → OCI */
   elimStat:{items:0,hit:0,tot:0,killed:0},    /* distractor-elimination drill: items, distractors hit / total, answer wrongly killed */
+  convGate:{streak:0},    /* Conversion Gate: consecutive sessions where live accuracy held >=90% */
   drill:{runs:0},                             /* pre-market drill runs */
   mockHist:[],                                /* mock exam scaled-score history */
   diag:null,                                  /* PMD diagnostic report (defaults to fixture on first open) */
@@ -987,6 +992,7 @@ ROUTES.home=function(root){
   qa.append(actBtn('🆕 '+t('미풀이 우선'),'ghost',function(){startNovel();}));
   qa.append(actBtn('🩺 '+t('정체 진단'),'ghost',function(){go('diag');}));
   qa.append(actBtn('🎯 '+t('고효율 드릴'),'solid',function(){startMusDrill();}));
+  qa.append(actBtn('🚪 '+t('전환 게이트'),'ghost',function(){startConvGate();}));
   left.append(qa);
   if(pmdLiveInverted()){var chip=el('button','pmd-chip','⚠ '+t('역배분 감지 — 진단 보기'));chip.onclick=function(){sfx('sel');go('diag');};left.append(chip);}
   g.append(left);
@@ -1160,7 +1166,7 @@ function runCmd(raw){
     COVERAGE:'coverage',COVER:'coverage',MODELS:'models',VALUATION:'models',FLAGS:'flags',RISK_:'flags',
     CASES:'cases',TBS:'cases',PLAYBOOKS:'playbooks',NEMONIC:'playbooks',SETTINGS:'settings',SET:'settings',
     TOP:'news',N:'news',NEWS:'news',MSG:'chat',IB:'chat',CHAT:'chat',ECO:'eco',CAL:'eco',CALENDAR:'eco',
-    DRILL:'drill',PREMARKET:'drill',FLASH:'drill',GATE:'gates',GATES:'gates',LIMITS:'gates',MOCK:'__mock',EXAM:'__mock',NOVEL:'__novel',NEW:'__novel',UNSEEN:'__novel',DIAG:'diag',DIAGNOSE:'diag',PMD:'diag',MUS:'__mus',HY:'__mus',HIGHYIELD:'__mus'};
+    DRILL:'drill',PREMARKET:'drill',FLASH:'drill',GATE:'gates',GATES:'gates',LIMITS:'gates',MOCK:'__mock',EXAM:'__mock',NOVEL:'__novel',NEW:'__novel',UNSEEN:'__novel',DIAG:'diag',DIAGNOSE:'diag',PMD:'diag',MUS:'__mus',HY:'__mus',HIGHYIELD:'__mus',CONVERT:'__convgate',CONVGATE:'__convgate',TRANSFER:'__convgate',GATE2:'__convgate'};
   var deskMap={RISK:'BAR1',CAPM:'BAR2',CAPITAL:'BAR2',COST:'BAR3',FNR:'BAR4',REPORTING:'BAR4',GOV:'BAR5',MKT:'FIN',MARKETS:'FIN'};
   if(s==='HELP'){toast('HOME · REVIEW · TRADE · COVERAGE · MODELS · FLAGS · CASES · TOP · MSG · ECO · '+Object.keys(deskMap).slice(0,6).join(' · '));return;}
   if(s.indexOf('LANG ')===0){var l=s.slice(5).toLowerCase();if(['ko','en','ja'].indexOf(l)>=0){setLang(l);return;}}
@@ -1170,6 +1176,7 @@ function runCmd(raw){
   if(map[s]==='__mock'){startMock();return;}
   if(map[s]==='__novel'){startNovel();return;}
   if(map[s]==='__mus'){startMusDrill();return;}
+  if(map[s]==='__convgate'){startConvGate();return;}
   if(map[s]){go(map[s]);return;}
   toast('? '+esc(s)+' — '+t('HELP 입력 → 명령어'));
 }
@@ -1281,7 +1288,8 @@ function mcqMUS(q){
   if(!r||!r.n){H=0.5;D=0.1;}
   else{var acc=r.ok/r.n;
     H=(r.lastOk===false)?1.0:(acc<0.5?0.8:(acc<0.8?0.4:0.1));
-    D=(r.lastOk===false&&r.n>=2)?1.0:(r.lastOk===false?0.7:(acc<0.5?0.4:0.1));}
+    /* Danger = false confidence. True T3 = wrong WHILE sure (per-item conviction); else repeat-wrong proxy. */
+    D=(r.lastOk===false)?((r.lastSure===true)?1.0:(r.lastSure===false)?0.6:(r.n>=2?0.9:0.7)):(acc<0.5?0.4:0.1);}
   var pat=(q.id.indexOf('AI-PAT')===0||q.id.indexOf('AI-DSC')===0);
   var T=Math.min(1,(pat?0.6:0.2)+(q.bp?0.2:0)+(q.area==='BAR5'?0.2:0));
   return Math.round(28*L+22*H+28*D+22*T);
@@ -1296,10 +1304,34 @@ function startMusDrill(){
   if(!pool.length){toast(t('문항이 없습니다'));return;}
   startSession({queue:pool.slice(0,12).map(function(o){return {kind:'mcq',q:o.q};}),scope:'mus'});
 }
+/* CONVERSION GATE (PMD §14b) — re-test previously DRILL-CORRECT items under cold, mixed (interleaved),
+   no-hint, timed conditions. Tests whether drill accuracy TRANSFERS to live. The #1 documented failure:
+   drill ≫ live. Win = live accuracy ≥ 90% (drill baseline ~100%); 3 consecutive sessions clear the gate. */
+function convGatePool(){var out=[];(DATA.mcqs||[]).forEach(function(q){if(q.area==='FIN')return;var r=S.m['mcq:'+q.id];if(r&&r.ok>0&&r.lastOk===true)out.push(q);});return out;}
+function startConvGate(){
+  var pool=convGatePool();
+  if(pool.length<6){toast(t('전이 테스트할 드릴-정답 문항이 부족 — 더 풀어 정답을 쌓으세요'));return;}
+  var q=shuffle(pool).slice(0,Math.min(12,pool.length)).map(function(m){return {kind:'mcq',q:m};});   /* interleaved across areas */
+  SESS={opt:{scope:'convgate'},queue:q,i:0,fills:0,wins:0,pnl0:S.book,newCov:0,rankBefore:rankOf(S.xp).idx,
+    edna:{concept:0,calc:0,trap:0,misread:0},convGate:true,cg:{liveC:0,liveT:0},startT:Date.now()};
+  go('session');
+}
+function convGateResult(live,cg,held,streak){
+  var wrap=el('div');wrap.style.marginTop='14px';
+  var mins=(SESS&&SESS.startT)?Math.round((Date.now()-SESS.startT)/60000):null,u=(S.lang==='ja'?'分':S.lang==='en'?' min':'분');
+  var p=el('div','panel'+(held?' gild':''));
+  p.append(panelHead(t('전환 게이트'),'CONVERSION',held?t('전이 유지'):'ARMED'));
+  var b=el('div','panel-b');
+  b.append(el('div','perf-hero','<div class="perf-aum" style="color:'+(held?'var(--up)':'var(--down)')+';filter:none">'+live+'%</div>'+
+    '<div class="perf-sub">'+esc(t('드릴 정답 → 실전'))+' · '+cg.liveC+'/'+cg.liveT+(mins!=null?' · ⏱ '+mins+u:'')+'</div>'));
+  b.append(el('div','pmd-verdict',held?('✓ '+t('전이 유지 — 연속')+' '+streak+'/3'+(streak>=3?(' · '+t('게이트 해제')):'')):('⚠ '+t('드릴 정답이 실전으로 전이되지 않음 — 콜드·혼합·무힌트에서 무너졌습니다. 무너진 문항을 다시 보세요.'))));
+  p.append(b);wrap.append(p);
+  return wrap;
+}
 /* MOCK EXAM ("Market Close") — blueprint-weighted MCQ + interactive TBS, timed, scaled-score estimate */
 let _mockClock=null;
 function mockClockStr(){var s=Math.max(0,Math.floor((Date.now()-((SESS&&SESS.startT)||Date.now()))/1000));return Math.floor(s/60)+':'+('0'+(s%60)).slice(-2);}
-function mockClockTick(){var e=document.getElementById('mock-clock');if(!e||!SESS||!SESS.mock){if(_mockClock){clearInterval(_mockClock);_mockClock=null;}return;}e.textContent='⏱ '+mockClockStr();}
+function mockClockTick(){var e=document.getElementById('mock-clock');if(!e||!SESS||!(SESS.mock||SESS.convGate)){if(_mockClock){clearInterval(_mockClock);_mockClock=null;}return;}e.textContent='⏱ '+mockClockStr();}
 function mockQueue(){
   function mid(w){var m=(w||'').match(/(\d+)\D+(\d+)/);return m?(+m[1]+ +m[2])/2:15;}
   var per={},tot=0;(DATA.areas||[]).forEach(function(a){var x=mid(a.weight);per[a.id]=x;tot+=x;});
@@ -1350,9 +1382,9 @@ ROUTES.session=function(root){
   var prog=el('div','prog');prog.innerHTML='<i style="width:'+Math.round(SESS.i/SESS.queue.length*100)+'%"></i>';
   var meta=el('span','mono');meta.style.cssText='font-size:11px;color:var(--muted);white-space:nowrap';
   meta.textContent=(SESS.i+1)+' / '+SESS.queue.length;
-  var sp=el('span','streakpill'+(S.streak>=3?' hot':''),SESS.mock?('<span id="mock-clock">⏱ '+mockClockStr()+'</span>'):('▲ '+S.streak));
+  var sp=el('span','streakpill'+(S.streak>=3?' hot':''),(SESS.mock||SESS.convGate)?('<span id="mock-clock">⏱ '+mockClockStr()+'</span>'):('▲ '+S.streak));
   top.append(meta,prog,sp);root.append(top);
-  if(SESS.mock&&!_mockClock)_mockClock=setInterval(mockClockTick,1000);
+  if((SESS.mock||SESS.convGate)&&!_mockClock)_mockClock=setInterval(mockClockTick,1000);
 
   var card=el('div','panel pad');
   if(step.kind==='mcq')renderMcq(card,step.q);
@@ -1416,19 +1448,21 @@ function renderMcq(card,q){
   card.append(wrap);
 
   /* consensus hint (mnemonic) */
+  if(!(SESS&&SESS.convGate)){   /* no hints in Conversion Gate (live conditions) */
   var hintRow=el('div');hintRow.style.marginTop='12px';
   var hb=el('button','btn ghost sm','◔ '+t('애널리스트 컨센서스'));
   hb.onclick=function(){sfx('sel');hintUsed=true;
     var alt=keys.filter(function(k){return k!==q.answer&&q.choices[k]!=null;});
     sample(alt,Math.min(2,alt.length-0)).forEach(function(k){var c=wrap.querySelector('.choice[data-k="'+k+'"]');if(c&&!c.getAttribute('disabled')){c.classList.add('dim');}});
     hb.remove();};
-  hintRow.append(hb);card.append(hintRow);
+  hintRow.append(hb);card.append(hintRow);}
 }
 function gradeMcq(card,q,ok,hintUsed,conv,elim){
   card.classList.add(ok?'flash-ok':'flash-no');
   bump('mcq:'+q.id,ok);S.stats.answered++;
-  if(conv){S.conv.n++;if(conv==='sure'){S.conv.sure++;if(!ok)S.conv.sureWrong++;}}
+  if(conv){S.conv.n++;if(conv==='sure'){S.conv.sure++;if(!ok)S.conv.sureWrong++;}var _cm=S.m['mcq:'+q.id];if(_cm)_cm.lastSure=(conv==='sure');}
   if(SESS&&SESS.mock&&SESS.mk){SESS.mk.mcqT++;if(ok)SESS.mk.mcqC++;var _o=(SESS.mk.area[q.area]||(SESS.mk.area[q.area]={c:0,a:0}));_o.a++;if(ok)_o.c++;}
+  if(SESS&&SESS.convGate&&SESS.cg){SESS.cg.liveT++;if(ok)SESS.cg.liveC++;}
   var delta;
   if(ok){S.stats.correct++;S.streak++;S.bestStreak=Math.max(S.bestStreak,S.streak);S.xp++;
     delta=8000+Math.min(S.streak,8)*2500-(hintUsed?6000:0);SESS.wins++;sfx('fill');}
@@ -1453,7 +1487,7 @@ function gradeMcq(card,q,ok,hintUsed,conv,elim){
     efb.innerHTML='<span>'+(killed?'⚠ '+t('정답을 소거했습니다'):(clean?'✓ '+t('완벽한 소거'):t('오답 소거')))+'</span><span class="ef-n">'+hit+'/'+dk.length+'</span>';
     card.append(efb);
   }
-  if(ok||(SESS&&SESS.mock))nextButton(card);else lossAttribution(card);
+  if(ok||(SESS&&(SESS.mock||SESS.convGate)))nextButton(card);else lossAttribution(card);
   renderTop();save();
 }
 /* loss attribution (Error DNA) — classify WHY an MCQ was missed; builds a weakness map */
@@ -1606,6 +1640,9 @@ ROUTES.result=function(root){
   if(SESS.mock&&SESS.mk){var mk=SESS.mk,mcqP=mk.mcqT?Math.round(mk.mcqC/mk.mcqT*100):0,tbsP=mk.tbsT?Math.round(mk.tbsC/mk.tbsT*100):0,comp=Math.round(0.5*mcqP+0.5*tbsP);
     if(!S.mockHist)S.mockHist=[];S.mockHist.push({d:new Date().toISOString().slice(0,10),comp:comp,mcq:mcqP,tbs:tbsP});if(S.mockHist.length>30)S.mockHist=S.mockHist.slice(-30);save();
     root.append(mockResultPanel(mk,comp,mcqP,tbsP));}
+  if(SESS.convGate&&SESS.cg){var _cg=SESS.cg,_live=_cg.liveT?Math.round(_cg.liveC/_cg.liveT*100):0,_held=(_live>=90);
+    if(!S.convGate)S.convGate={streak:0};S.convGate.streak=_held?((S.convGate.streak||0)+1):0;save();
+    root.append(convGateResult(_live,_cg,_held,S.convGate.streak));}
   var _et=SESS.edna.concept+SESS.edna.calc+SESS.edna.trap+SESS.edna.misread;
   if(_et){var ap=el('div','panel');ap.style.marginTop='14px';ap.append(panelHead(t('손실 귀속'),'ATTRIB',_et+''));
     var ab=el('div','panel-b');ab.append(ednaWidget(SESS.edna));ap.append(ab);root.append(ap);}
