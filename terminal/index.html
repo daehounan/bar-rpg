@@ -749,7 +749,7 @@ const I18N={en:{},ja:{}};
   ['오답으로 소거','Eliminate as wrong','誤答として消去'],['오답 소거','Distractors ruled out','誤答消去'],
   ['완벽한 소거','Clean elimination','完全消去'],['정답을 소거했습니다','You ruled out the correct answer','正解を消去しました'],
   ['MCQ 채널 ≥ 75%','MCQ channel ≥ 75%','MCQチャネル ≥ 75%'],
-  ['미풀이 우선','Unseen first','未着手優先'],
+  ['미풀이 우선','Unseen first','未着手優先'],['고효율 드릴','High-yield drill','高効率ドリル'],
   ['미풀이 문항이 없습니다 — 모두 한 번씩 풀었어요','No unseen items — you have attempted them all.','未着手の問題はありません — すべて一度は解きました。'],
   ['오답 소거 정확도','Distractor-elimination accuracy','誤答消去の正確度'],
   ['정체 진단','Plateau Diagnostic','停滞診断'],['HIGH 신뢰','HIGH reliability','高信頼'],['LOW 신뢰','LOW reliability','低信頼'],
@@ -986,6 +986,7 @@ ROUTES.home=function(root){
   qa.append(actBtn('📝 '+t('모의고사'),'',function(){startMock();}));
   qa.append(actBtn('🆕 '+t('미풀이 우선'),'ghost',function(){startNovel();}));
   qa.append(actBtn('🩺 '+t('정체 진단'),'ghost',function(){go('diag');}));
+  qa.append(actBtn('🎯 '+t('고효율 드릴'),'solid',function(){startMusDrill();}));
   left.append(qa);
   if(pmdLiveInverted()){var chip=el('button','pmd-chip','⚠ '+t('역배분 감지 — 진단 보기'));chip.onclick=function(){sfx('sel');go('diag');};left.append(chip);}
   g.append(left);
@@ -1159,7 +1160,7 @@ function runCmd(raw){
     COVERAGE:'coverage',COVER:'coverage',MODELS:'models',VALUATION:'models',FLAGS:'flags',RISK_:'flags',
     CASES:'cases',TBS:'cases',PLAYBOOKS:'playbooks',NEMONIC:'playbooks',SETTINGS:'settings',SET:'settings',
     TOP:'news',N:'news',NEWS:'news',MSG:'chat',IB:'chat',CHAT:'chat',ECO:'eco',CAL:'eco',CALENDAR:'eco',
-    DRILL:'drill',PREMARKET:'drill',FLASH:'drill',GATE:'gates',GATES:'gates',LIMITS:'gates',MOCK:'__mock',EXAM:'__mock',NOVEL:'__novel',NEW:'__novel',UNSEEN:'__novel',DIAG:'diag',DIAGNOSE:'diag',PMD:'diag'};
+    DRILL:'drill',PREMARKET:'drill',FLASH:'drill',GATE:'gates',GATES:'gates',LIMITS:'gates',MOCK:'__mock',EXAM:'__mock',NOVEL:'__novel',NEW:'__novel',UNSEEN:'__novel',DIAG:'diag',DIAGNOSE:'diag',PMD:'diag',MUS:'__mus',HY:'__mus',HIGHYIELD:'__mus'};
   var deskMap={RISK:'BAR1',CAPM:'BAR2',CAPITAL:'BAR2',COST:'BAR3',FNR:'BAR4',REPORTING:'BAR4',GOV:'BAR5',MKT:'FIN',MARKETS:'FIN'};
   if(s==='HELP'){toast('HOME · REVIEW · TRADE · COVERAGE · MODELS · FLAGS · CASES · TOP · MSG · ECO · '+Object.keys(deskMap).slice(0,6).join(' · '));return;}
   if(s.indexOf('LANG ')===0){var l=s.slice(5).toLowerCase();if(['ko','en','ja'].indexOf(l)>=0){setLang(l);return;}}
@@ -1168,6 +1169,7 @@ function runCmd(raw){
   if(map[s]==='__trade'){startSession({scope:'all',mode:'mcq',n:10});return;}
   if(map[s]==='__mock'){startMock();return;}
   if(map[s]==='__novel'){startNovel();return;}
+  if(map[s]==='__mus'){startMusDrill();return;}
   if(map[s]){go(map[s]);return;}
   toast('? '+esc(s)+' — '+t('HELP 입력 → 명령어'));
 }
@@ -1268,6 +1270,32 @@ function startNovel(){
   var nov=novelMcqs();if(!nov.length){toast(t('미풀이 문항이 없습니다 — 모두 한 번씩 풀었어요'));return;}
   startSession({queue:sample(nov,Math.min(12,nov.length)).map(function(m){return {kind:'mcq',q:m};}),scope:'novel'});
 }
+/* MUS — Marginal Utility Score per MCQ, computed LIVE from the player's own S.m data.
+   Mirrors the Notion Problem-Bank MUS criterion (Leverage × Headroom × Danger × Transfer):
+   L=area lever (PMD; game desks BAR1/2/3=Area I, BAR4=II, BAR5=III), H=room to mastery,
+   D=false-confidence/repeat-wrong, T=pattern/discrimination/bp/Core-Five transfer. 0-100. */
+function mcqMUS(q){
+  if(!q||q.area==='FIN')return -1;
+  var L=(q.area==='BAR4')?0.89:(q.area==='BAR5')?0.33:1.0;
+  var r=S.m['mcq:'+q.id],H,D;
+  if(!r||!r.n){H=0.5;D=0.1;}
+  else{var acc=r.ok/r.n;
+    H=(r.lastOk===false)?1.0:(acc<0.5?0.8:(acc<0.8?0.4:0.1));
+    D=(r.lastOk===false&&r.n>=2)?1.0:(r.lastOk===false?0.7:(acc<0.5?0.4:0.1));}
+  var pat=(q.id.indexOf('AI-PAT')===0||q.id.indexOf('AI-DSC')===0);
+  var T=Math.min(1,(pat?0.6:0.2)+(q.bp?0.2:0)+(q.area==='BAR5'?0.2:0));
+  return Math.round(28*L+22*H+28*D+22*T);
+}
+function startMusDrill(){
+  var pool=(DATA.mcqs||[]).filter(function(q){
+    if(q.area==='FIN')return false;
+    var r=S.m['mcq:'+q.id];
+    if(r&&r.n>0&&(r.ok/r.n)>=0.9&&r.lastOk!==false)return false;   /* drop mastered */
+    return true;
+  }).map(function(q){return {q:q,m:mcqMUS(q)};}).sort(function(x,y){return y.m-x.m;});
+  if(!pool.length){toast(t('문항이 없습니다'));return;}
+  startSession({queue:pool.slice(0,12).map(function(o){return {kind:'mcq',q:o.q};}),scope:'mus'});
+}
 /* MOCK EXAM ("Market Close") — blueprint-weighted MCQ + interactive TBS, timed, scaled-score estimate */
 let _mockClock=null;
 function mockClockStr(){var s=Math.max(0,Math.floor((Date.now()-((SESS&&SESS.startT)||Date.now()))/1000));return Math.floor(s/60)+':'+('0'+(s%60)).slice(-2);}
@@ -1342,7 +1370,7 @@ function renderMcq(card,q){
   var area=q.area;
   var mh=el('div','ticket-meta');
   mh.innerHTML='<span class="tag desk" style="--ac:'+deskColor(area)+'">'+(DESK[area]?DESK[area].sym:area)+'</span>'+
-    '<span class="tag">'+symFrom(q.title)+'</span>'+(q.bp?'<span class="tag" style="color:var(--cyan);border-color:var(--cyan)" title="AICPA Blueprint">'+esc(q.bp)+'</span>':'')+'<span class="tag">ORDER TICKET</span>';
+    '<span class="tag">'+symFrom(q.title)+'</span>'+(q.bp?'<span class="tag" style="color:var(--cyan);border-color:var(--cyan)" title="AICPA Blueprint">'+esc(q.bp)+'</span>':'')+((SESS&&SESS.opt&&SESS.opt.scope==='mus')?'<span class="tag" style="color:var(--gold2);border-color:var(--gold-d)" title="Marginal Utility Score">🎯 '+mcqMUS(q)+'</span>':'')+'<span class="tag">ORDER TICKET</span>';
   card.append(mh);
   var _q=CT('mcqs',q.id,'question');
   var qh=md(q.question)+(_q?'<div class="en-orig">'+langLabel()+' · '+md(_q)+'</div>':'');
