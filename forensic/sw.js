@@ -1,5 +1,5 @@
 const PREFIX='bar-forensic-';
-const CACHE=PREFIX+'v46-ae509549';
+const CACHE=PREFIX+'v46-d21e7a28';
 const CORE=["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png", "./apple-touch-icon.png", "./favicon-32.png"];
 self.addEventListener('install',function(e){self.skipWaiting();e.waitUntil(caches.open(CACHE).then(function(c){return c.addAll(CORE);}).catch(function(){}));});
 self.addEventListener('activate',function(e){e.waitUntil((async function(){var ks=await caches.keys();await Promise.all(ks.filter(function(k){return k.indexOf(PREFIX)===0&&k!==CACHE;}).map(function(k){return caches.delete(k);}));await self.clients.claim();})());});
