@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="robots" content="noindex"/>
+<title>BAR 포렌식 감사 — CFO 대질</title>
+<style>
+:root{--bg:#0b1220;--panel:#131f33;--panel2:#0f1828;--ink:#e7ecf6;--mut:#9fb0c8;--gold:#d8b25a;--good:#3ec79a;--bad:#e4584b;--warn:#e0a93f;--line:#22324c;--mono:ui-monospace,Menlo,Consolas,monospace}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(1200px 600px at 50% -10%,#16233b,#0b1220 60%);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans KR",sans-serif;line-height:1.55;-webkit-text-size-adjust:100%}
+.wrap{max-width:680px;margin:0 auto;padding:16px 16px 64px}
+.hud{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 14px;margin-bottom:12px;position:sticky;top:8px;z-index:5;backdrop-filter:blur(4px)}
+.hud .lbl{font-size:11px;color:var(--mut);letter-spacing:.04em}
+.hud .big{font-size:20px;font-weight:700;font-family:var(--mono)}
+.gold{color:var(--gold)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin-bottom:14px}
+.cfo{display:flex;gap:12px;align-items:flex-start}
+.ava{flex:0 0 auto;width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;background:#3a2c12;color:var(--gold);border:1px solid #5a4620}
+.bubble{background:#1b2942;border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:0 12px 12px 12px;padding:10px 12px;color:#eaeefb}
+.q{font-weight:600;margin:14px 0 8px}
+.in{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:10px;color:var(--ink);font-size:17px;font-family:var(--mono);padding:12px 14px;outline:none}
+.in:focus{border-color:var(--gold)}
+.btn{appearance:none;cursor:pointer;background:#1a2840;color:var(--ink);border:1px solid var(--line);border-radius:11px;padding:12px 14px;font-size:15px;font-weight:600;transition:transform .06s,border-color .15s}
+.btn:hover{border-color:var(--gold)}.btn:active{transform:scale(.98)}
+.btn.primary{background:linear-gradient(180deg,#caa64f,#a9863a);color:#1a1407;border-color:#caa64f}
+.btn.full{display:block;width:100%}
+.btn.sel{border-color:var(--gold);color:var(--gold)}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.choice{display:block;width:100%;text-align:left;margin:8px 0}
+.muted{color:var(--mut);font-size:13px}
+.pill{display:inline-block;font-size:11px;padding:3px 9px;border-radius:999px;border:1px solid var(--line);color:var(--mut)}
+.pow-강{color:var(--bad);border-color:#4a2420}.pow-중{color:var(--warn);border-color:#4a3a1a}.pow-약{color:var(--mut)}
+.fld{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.fld .in{width:170px}
+.cs{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:10px 0;cursor:pointer}
+.cs:hover{border-color:var(--gold)}
+.warn{color:var(--warn);font-size:12px}
+.timer{font-family:var(--mono);font-size:18px;font-weight:700;color:var(--mut)}
+.pop{animation:pop .3s ease}@keyframes pop{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
+.shake{animation:shk .4s}@keyframes shk{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.title{font-size:22px;font-weight:800;letter-spacing:-.01em}
+.sub{color:var(--mut);font-size:13px}
+.tbl{width:100%;font-size:14px;border-collapse:collapse}
+.tbl td{padding:4px 0;vertical-align:top}
+.tbl td:first-child{color:var(--mut);padding-right:12px;white-space:nowrap}
+.good{color:var(--good)}.bad{color:var(--bad)}
+.foot{text-align:center;color:#54627a;font-size:11px;margin-top:18px}
+</style>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0b1220">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="BAR Forensic">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script>
+(function(){
+var app=document.getElementById('app');
+var MAXH=3;
+var SAVE=load(); if(SAVE.rep==null)SAVE.rep=50; if(SAVE.best==null)SAVE.best=0; if(SAVE.wins==null)SAVE.wins=0; if(!SAVE.cleared)SAVE.cleared={}; if(!SAVE.stat)SAVE.stat={};
+var S={};
+function load(){try{return JSON.parse(localStorage.getItem('bar_forensic2')||'{}')}catch(e){return {}}}
+function save(){try{localStorage.setItem('bar_forensic2',JSON.stringify(SAVE))}catch(e){}}
+
+var CASES=[
+{
+ id:'eps', area:'Area II', title:'Meridian Corp. — 희석 EPS', sub:'적발 4건 · 보스 6필드',
+ brief:'CFO 한정수가 FY2025 희석 EPS를 부풀렸다. 네 증언의 거짓을 무너뜨리고 직접 EPS를 계산해 평결하라.',
+ facts:[['당기순이익','$2,000,000'],['전환우선주','6% 누적 10,000주×$100 (배당 $60,000) · 1주→보통주 2주'],['보통주','1/1 800,000주 · 7/1 +200,000주'],['전환사채','$1,000,000, 8% → 보통주 30,000주'],['스톡옵션','60,000개 · 행사가 $20 · 평균시가 $25'],['법인세율','25%']],
+ W:[
+  {id:'wacso',title:'가중평균보통주',fts:42,type:'num',ans:900000,bossWrong:'1000000',
+   claim:'보통주는 기초 800,000에서 7/1에 200,000 발행, 기말 1,000,000. 분모는 그냥 1,000,000입니다.',
+   ask:'분모에 들어갈 가중평균보통주(WACSO)는 몇 주입니까?',
+   hint:'기중 발행분은 유통기간 가중: 800,000 + 200,000×(6/12) = 900,000.',
+   why:'7/1 발행 200,000은 6개월만 반영 → 900,000.',win:'……900,000. 인정합니다.',
+   pounce:{'1000000':'연말 주식수 그대로? 7월 신주의 가중을 빼먹으셨군요.','800000':'기초만요? 7월에 찍은 20만 주는요?','950000':'9개월? 7/1이면 6개월입니다.'}},
+  {id:'opt',title:'옵션 증분주식 (자기주식법)',fts:39,type:'num',ans:12000,bossWrong:'60000',
+   claim:'옵션 60,000개, 행사가 $20, 시가 $25. 행사하면 신주 60,000주니 분모에 60,000 더합니다.',
+   ask:'자기주식법으로 분모에 더할 증분주식은 몇 주입니까?',
+   hint:'행사대금 60,000×$20=$1,200,000 ÷ 시가 $25 = 48,000 재매입 → 증분 60,000−48,000.',
+   why:'행사대금으로 자사주 재매입: 1,200,000÷25=48,000 → 증분 12,000.',win:'……12,000. 가져가시죠.',
+   pounce:{'60000':'옵션 수 전부? 행사대금으로 자사주 되사는 건 잊으셨군요.','30000':'60,000×20/25는 48,000입니다 — 30,000이 아니라.','48000':'그건 되사는 주식이고, 증분은 60,000−48,000입니다.'}},
+  {id:'int',title:'전환사채 세후이자 가산',fts:35,type:'num',ans:60000,bossWrong:'80000',
+   claim:'전환사채 $1,000,000, 8%. 전환 가정하니 이자 $80,000을 분자에 도로 더합니다. 세율 25%.',
+   ask:'if-converted법으로 분자에 가산할 이자는 세후로 얼마입니까? ($)',
+   hint:'80,000 × (1 − 0.25) = 60,000.',why:'세후 이자만 가산: 80,000×0.75=60,000.',win:'……$60,000 세후. 쳇, 맞습니다.',
+   pounce:{'80000':'세전 그대로? 이자엔 절세효과가 붙습니다 — ×(1−25%).','0':'안 더한다? 전환 가정하면 이자가 되살아납니다.','1000000':'원금을 분자에? 그건 이자가 아니죠.'}},
+  {id:'pref',title:'전환우선주 희석성',fts:31,type:'choice',bossWrong:'Y',
+   claim:'6% 전환우선주, 배당 $60,000, 1주당 보통주 2주(20,000주). 주식 늘리니 희석에 포함하면 보수적입니다.',
+   ask:'전환우선주를 희석 EPS에서 어떻게 처리합니까?',
+   choices:[{t:'희석 증권으로 포함',ok:false},{t:'반희석이므로 제외',ok:true}],
+   hint:'증분효과 = 60,000÷20,000 = $3.00 > 희석 전 EPS($2.12) → 포함 시 EPS 상승 → 반희석 → 제외.',
+   why:'증분효과 $3.00 > 희석 전 EPS → 반희석 → 제외.',win:'……반희석. 제외해야겠죠.',
+   wrongLine:'포함하면 EPS가 오히려 올라갑니다 — 증분효과 60,000÷20,000=$3.00이 희석 전 EPS($2.12)보다 크니까. 그게 반희석이에요.'}
+ ],
+ boss:[
+  {k:'wacso',label:'가중평균보통주 (WACSO)',type:'num',ans:900000},
+  {k:'opt',label:'옵션 증분주식',type:'num',ans:12000},
+  {k:'int',label:'전환사채 세후이자 가산 ($)',type:'num',ans:60000},
+  {k:'pref',label:'전환우선주 희석성',type:'yn',ans:'N',ynLabels:{Y:'Y 희석',N:'N 반희석'}},
+  {k:'basic',label:'Basic EPS ($)',type:'eps',ans:2.16},
+  {k:'diluted',label:'Diluted EPS ($)',type:'eps',ans:2.12}
+ ]
+},
+{
+ id:'con', area:'Area II', title:'Apex Holdings — 사업결합 영업권·NCI', sub:'적발 4건 · 보스 4필드',
+ brief:'Apex가 Summit의 80%를 인수했다. CFO가 영업권을 줄여 향후 손상을 피하려 한다. 취득법(ASC 805)을 적용해 진짜 영업권을 계산하라.',
+ facts:[['취득 지분','Summit 80% · 현금 $400,000'],['NCI 공정가치','$100,000 (평가서 제공)'],['식별가능 순자산','장부 $420,000 · 공정가치 $450,000'],['취득관련 원가','자문·법률 수수료 $15,000'],['측정','NCI 공정가치법(전부영업권)']],
+ W:[
+  {id:'cons',title:'이전대가',fts:44,type:'num',ans:400000,bossWrong:'415000',
+   claim:'인수에 현금 $400,000에 자문·법률비 $15,000까지 들었으니, 이전대가는 $415,000입니다.',
+   ask:'영업권 계산에 쓸 이전대가는 얼마입니까? ($)',
+   hint:'ASC 805: 취득관련 원가(자문·법률)는 당기 비용 — 이전대가 제외.',why:'취득관련 원가는 비용처리, 이전대가는 $400,000.',win:'……$400,000. 수수료는 비용이죠. 인정.',
+   pounce:{'415000':'자문·법률비를 대가에 넣으셨네요. ASC 805에서 그건 당기 비용입니다.','400000':''}},
+  {id:'nci',title:'NCI 측정',fts:38,type:'num',ans:100000,bossWrong:'90000',
+   claim:'NCI는 20%니까, 식별 순자산 공정가치 $450,000의 20% = $90,000으로 잡죠.',
+   ask:'연결에 인식할 NCI 금액은 얼마입니까? ($)',
+   hint:'US GAAP 기본은 NCI를 공정가치로 측정 — 평가서가 준 $100,000.',why:'NCI는 공정가치 $100,000(비례배분 아님).',win:'……$100,000. 공정가치로요. 들켰군요.',
+   pounce:{'90000':'그건 비례배분(IFRS 선택)입니다. US GAAP 기본은 공정가치 $100,000.','100000':''}},
+  {id:'fvna',title:'식별가능 순자산',fts:40,type:'num',ans:450000,bossWrong:'420000',
+   claim:'순자산은 장부금액 $420,000으로 잡으면 됩니다.',
+   ask:'취득법에서 식별가능 순자산은 얼마로 측정합니까? ($)',
+   hint:'취득일에 식별가능 자산·부채는 공정가치로 재측정 — $450,000.',why:'공정가치 $450,000(장부 아님).',win:'……$450,000 공정가치. 맞습니다.',
+   pounce:{'420000':'장부금액이군요. 취득은 공정가치로 재측정합니다 — $450,000.','450000':''}},
+  {id:'goodwill',title:'영업권 계산법',fts:33,type:'choice',bossWrong:'40000',
+   claim:'영업권은 우리가 낸 돈에서 우리 몫 순자산을 뺀 거죠: 400,000 − 80%×450,000 = $40,000.',
+   ask:'NCI 공정가치법에서 영업권은 어떻게 계산합니까?',
+   choices:[{t:'대가 − 지분율×순자산 (부분영업권)',ok:false},{t:'대가 + NCI − 식별 순자산 (전부영업권)',ok:true}],
+   hint:'전부영업권 = 이전대가 + NCI − 식별 순자산 FV = 400,000 + 100,000 − 450,000 = 50,000.',
+   why:'전부영업권 = 400,000+100,000−450,000 = 50,000.',win:'……전부영업권. 50,000이군요. 졌습니다.',
+   wrongLine:'그건 부분영업권(40,000)입니다. NCI를 공정가치로 두면 영업권 = 대가 + NCI − 식별 순자산 = 50,000.'}
+ ],
+ boss:[
+  {k:'cons',label:'이전대가 ($)',type:'num',ans:400000},
+  {k:'nci',label:'NCI 공정가치 ($)',type:'num',ans:100000},
+  {k:'fvna',label:'식별가능 순자산 FV ($)',type:'num',ans:450000},
+  {k:'goodwill',label:'영업권 ($)',type:'num',ans:50000}
+ ]
+},
+{
+ id:'npv', area:'Area I', title:'Delta Mfg. — 설비투자 NPV', sub:'적발 4건 · 보스 5필드',
+ brief:'CFO가 신규 설비안을 통과시키려 NPV를 부풀렸다(혹은 묻으려 한다). 관련 현금흐름만 추려 진짜 NPV로 평결하라.',
+ facts:[['신규 설비 투자(t0)','$240,000'],['작년 타당성조사비','$20,000 (이미 지출)'],['연 현금영업이익(감가·세전)','$100,000'],['내용연수','4년 · 정액법 · 잔존 0 → 연 감가 $60,000'],['법인세율','25%'],['할인율 / PVIFA(10%,4)','10% / 3.170']],
+ W:[
+  {id:'init',title:'관련 초기투자',fts:41,type:'num',ans:240000,bossWrong:'260000',
+   claim:'초기투자는 설비 $240,000에 작년 타당성조사비 $20,000을 더해 $260,000입니다.',
+   ask:'NPV에 반영할 관련 초기투자액은 얼마입니까? ($)',
+   hint:'이미 지출한 타당성조사비는 매몰원가 — 의사결정에서 제외.',why:'매몰원가 제외 → 초기투자 $240,000.',win:'……$240,000. 매몰원가는 빼야죠.',
+   pounce:{'260000':'타당성조사비는 매몰원가입니다 — 이미 나간 돈, 의사결정과 무관.','240000':''}},
+  {id:'cf',title:'세후 영업현금흐름',fts:36,type:'num',ans:90000,bossWrong:'75000',
+   claim:'연 현금이익 $100,000에 세금 25%를 떼면 세후 $75,000이 연간 현금흐름입니다.',
+   ask:'연간 세후 영업현금흐름은 얼마입니까? ($)',
+   hint:'감가상각 절세효과 가산: (100,000−60,000)×0.75 + 60,000 = 90,000.',why:'감가 절세효과 60,000×25%=15,000 가산 → 90,000.',win:'……$90,000. 감가 절세를 빼먹을 뻔했네요.',
+   pounce:{'75000':'감가상각 절세효과(60,000×25%=15,000)를 빼먹으셨습니다 → 90,000.','90000':'','85000':'감가 절세는 60,000×25%=15,000입니다.'}},
+  {id:'pv',title:'유입액 현재가치',fts:34,type:'num',ans:285300,bossWrong:'360000',
+   claim:'4년이니 연 $90,000을 그냥 4배 하면 유입 현재가치 $360,000입니다.',
+   ask:'유입액의 현재가치는 얼마입니까? (PVIFA 3.170) ($)',
+   hint:'연금현가: 90,000 × 3.170 = 285,300.',why:'90,000 × 3.170 = 285,300(할인 반영).',win:'……$285,300. 할인을 해야죠.',
+   pounce:{'360000':'단순 4배? 화폐의 시간가치를 무시하셨습니다 — ×3.170.','285300':''}},
+  {id:'decision',title:'채택 여부',fts:45,type:'choice',bossWrong:'N',
+   claim:'할인하면 유입이 초기투자에 못 미쳐 NPV가 음수입니다 — 기각합시다.',
+   ask:'이 투자안을 어떻게 평결합니까?',
+   choices:[{t:'채택한다 (NPV > 0)',ok:true},{t:'기각한다 (NPV < 0)',ok:false}],
+   hint:'NPV = 285,300 − 240,000 = +45,300 > 0 → 채택.',
+   why:'NPV = 285,300 − 240,000 = +45,300 > 0 → 채택.',win:'……NPV 양수. 채택이군요. 묻으려던 게 들켰습니다.',
+   wrongLine:'NPV = 285,300 − 240,000 = +45,300, 양수입니다. 기각이 아니라 채택이에요.'}
+ ],
+ boss:[
+  {k:'init',label:'관련 초기투자 ($)',type:'num',ans:240000},
+  {k:'cf',label:'연 세후 영업현금흐름 ($)',type:'num',ans:90000},
+  {k:'pv',label:'유입액 현재가치 ($)',type:'num',ans:285300},
+  {k:'npv',label:'NPV ($)',type:'num',ans:45300},
+  {k:'decision',label:'평결',type:'yn',ans:'Y',ynLabels:{Y:'채택',N:'기각'}}
+ ]
+},
+{
+ id:'gasb', area:'Area III', title:'City of Lakemont — 일반기금(수정발생)', sub:'적발 4건 · 보스 5필드',
+ brief:'재무국장이 일반기금 결산을 정부전체(전부발생)처럼 처리해 기금잔액을 왜곡했다. 수정발생·현재재무자원 기준으로 바로잡아라.',
+ facts:[['회계실체','City of Lakemont 일반기금 · FY2025'],['재산세 부과','$500,000 (당기+60일내 $470,000 징수, 잔여 $30,000 추후)'],['기타 수익(당기 가용)','$100,000'],['운영 지출','$300,000'],['장비 취득','$80,000 (내용연수 8년)'],['일반사채 발행','$200,000']],
+ W:[
+  {id:'rev',title:'재산세 수익 인식',fts:37,type:'num',ans:470000,bossWrong:'500000',
+   claim:'재산세 $500,000 전액을 당기 수익으로 인식합니다.',
+   ask:'수정발생 기준 인식할 재산세 수익은? ($)',
+   hint:'수정발생 = 측정가능 + 가용(당기+60일내 징수). 470,000만 수익, 30,000은 이연유입.',
+   why:'가용분 470,000만 수익, 잔여 30,000은 이연유입자원.',win:'……470,000. 가용분만요. 인정합니다.',
+   pounce:{'500000':'전액요? 수정발생은 가용(60일내 징수)만 수익입니다 — 470,000.','470000':''}},
+  {id:'capout',title:'장비 취득 처리',fts:34,type:'num',ans:80000,bossWrong:'0',
+   claim:'장비 $80,000은 자본화하고 8년 감가상각합니다.',
+   ask:'일반기금 운영명세서에 장비 취득은 얼마를 지출(expenditure)로 기록합니까? ($)',
+   hint:'정부기금은 현재재무자원·수정발생 — 취득 시 전액 지출, 감가 없음.',
+   why:'자본화·감가는 정부전체에서. 기금은 전액 지출 80,000.',win:'……전액 80,000 지출. 기금엔 감가가 없죠.',
+   pounce:{'0':'자본화·감가는 정부전체(전부발생)요. 기금은 취득 시 전액 지출 80,000.','10000':'감가 1년치? 기금은 전액 지출입니다.','80000':''}},
+  {id:'bond',title:'사채 발행 처리',fts:39,type:'choice',bossWrong:'Y',
+   claim:'사채 발행으로 현금 $200,000이 들어왔으니 수익으로 잡죠.',
+   ask:'일반사채 발행 $200,000을 어떻게 보고합니까?',
+   choices:[{t:'수익(Revenue)으로 인식',ok:false},{t:'기타재원(Other Financing Source)',ok:true}],
+   hint:'채무 발행 유입은 수익이 아니라 기타재원(OFS).',
+   why:'사채 발행은 기타재원(OFS), 수익 아님.',win:'……기타재원이군요. 수익으로 부풀리려던 게 들켰습니다.',
+   wrongLine:'그건 갚아야 할 빚입니다 — 수익이 아니라 기타재원(OFS)으로 보고합니다.'},
+  {id:'focus',title:'측정초점·인식기준',fts:33,type:'choice',bossWrong:'Y',
+   claim:'일반기금도 전부발생주의로 자산·부채를 다 잡읍시다.',
+   ask:'정부기금의 측정초점·인식기준은?',
+   choices:[{t:'경제적 자원 · 전부발생',ok:false},{t:'현재 재무자원 · 수정발생',ok:true}],
+   hint:'정부기금 = 현재재무자원 측정초점 + 수정발생주의(정부전체만 전부발생).',
+   why:'정부기금은 현재재무자원·수정발생.',win:'……현재재무자원·수정발생. 맞습니다.',
+   wrongLine:'전부발생은 정부전체 재무제표입니다. 기금은 현재재무자원·수정발생이에요.'}
+ ],
+ boss:[
+  {k:'rev',label:'재산세 수익 ($)',type:'num',ans:470000},
+  {k:'capout',label:'장비 — 지출액 ($)',type:'num',ans:80000},
+  {k:'bond',label:'사채 발행 처리',type:'yn',ans:'N',ynLabels:{Y:'수익',N:'기타재원(OFS)'}},
+  {k:'focus',label:'측정초점·기준',type:'yn',ans:'N',ynLabels:{Y:'전부발생',N:'수정발생'}},
+  {k:'net',label:'기금잔액 순증감 ($)',type:'num',ans:390000}
+ ]
+},
+{
+ id:'var', area:'Area I', title:'Forge Industries — 표준원가 차이분석', sub:'적발 4건 · 보스 5필드',
+ brief:'생산담당 부사장이 재료차이를 유리하게 보이려 수량 기준과 부호를 섞었다. 가격차이와 수량차이를 정확히 분리하라.',
+ facts:[['생산량','제품 1,000단위'],['표준','단위당 재료 3 lbs @ $5.00/lb'],['실제 구매','3,500 lbs @ $4.50/lb'],['실제 사용','3,200 lbs'],['단가','표준 SP $5.00 · 실제 AP $4.50']],
+ W:[
+  {id:'sq',title:'표준 허용수량(SQ)',fts:40,type:'num',ans:3000,bossWrong:'3200',
+   claim:'기준수량은 실제 사용한 3,200 lbs로 잡읍시다.',
+   ask:'실제 산출량에 대한 표준 허용수량(SQ)은? (lbs)',
+   hint:'SQ = 실제산출 × 단위당 표준 = 1,000 × 3 = 3,000.',
+   why:'SQ = 1,000단위 × 3 lbs = 3,000.',win:'……3,000. 실제수량을 기준 삼을 뻔했네요.',
+   pounce:{'3200':'그건 실제 사용량입니다. 기준은 실제산출의 표준허용 = 1,000×3 = 3,000.','3500':'그건 구매량이고요. SQ는 1,000×3=3,000.','3000':''}},
+  {id:'pamt',title:'재료 가격차이 금액',fts:33,type:'num',ans:1750,bossWrong:'1600',
+   claim:'가격차이는 사용량 3,200으로: ($5.00−$4.50)×3,200 = $1,600.',
+   ask:'재료 가격차이 금액은? ($, 절댓값)',
+   hint:'가격차이는 구매 시점 구매량 기준: (AP−SP)×구매량 = 0.50×3,500 = $1,750.',
+   why:'가격차이는 구매량 3,500 기준: 0.50×3,500 = $1,750.',win:'……$1,750. 구매량 기준이죠. 인정.',
+   pounce:{'1600':'사용량 3,200을 쓰셨네요. 가격차이는 구매량 3,500 기준 — $1,750.','1750':''}},
+  {id:'pfu',title:'가격차이 평가',fts:37,type:'choice',bossWrong:'N',
+   claim:'단가가 흔들렸으니 가격차이는 불리(U)로 봅시다.',
+   ask:'재료 가격차이는 유리입니까 불리입니까?',
+   choices:[{t:'유리(Favorable)',ok:true},{t:'불리(Unfavorable)',ok:false}],
+   hint:'실제단가 $4.50 < 표준단가 $5.00 → 싸게 샀으니 유리(F).',
+   why:'AP $4.50 < SP $5.00 → 유리(F).',win:'……유리. 싸게 샀으니까요. 맞습니다.',
+   wrongLine:'실제단가가 표준보다 낮습니다($4.50<$5.00) — 싸게 산 거니 유리(F)예요.'},
+  {id:'qamt',title:'재료 수량차이 금액',fts:38,type:'num',ans:1000,bossWrong:'900',
+   claim:'수량차이? (3,200−3,000)×실제단가 $4.50 = $900입니다.',
+   ask:'재료 수량차이 금액은? ($, 절댓값)',
+   hint:'수량차이는 표준단가로 평가: (3,200−3,000)×$5.00 = $1,000.',
+   why:'(AQ사용−SQ)×SP = 200×$5 = $1,000.',win:'……$1,000. 표준단가로 봐야죠.',
+   pounce:{'900':'표준단가로 평가합니다 — ×$5.00, 가격효과를 섞지 마세요. $1,000.','1000':''}}
+ ],
+ boss:[
+  {k:'sq',label:'표준 허용수량 SQ (lbs)',type:'num',ans:3000},
+  {k:'pamt',label:'가격차이 금액 ($)',type:'num',ans:1750},
+  {k:'pfu',label:'가격차이 평가',type:'yn',ans:'Y',ynLabels:{Y:'유리(F)',N:'불리(U)'}},
+  {k:'qamt',label:'수량차이 금액 ($)',type:'num',ans:1000},
+  {k:'qfu',label:'수량차이 평가',type:'yn',ans:'N',ynLabels:{Y:'유리(F)',N:'불리(U)'}}
+ ]
+},
+{
+ id:'pen', area:'Area II', title:'Orion Corp. — 순연금비용', sub:'적발 4건 · 보스 5필드',
+ brief:'CFO가 실제수익을 끌어와 순연금비용을 줄였다. SIR-AGE 구성요소를 바로잡아 진짜 비용을 산출하라.',
+ facts:[['근무원가(Service)','$120,000'],['기초 PBO','$1,000,000 · 할인율 5%'],['기초 사외적립자산','$800,000 · 기대수익률 8%'],['실제 자산수익','$90,000'],['과거근무원가 상각','$20,000'],['순손실 상각','$5,000']],
+ W:[
+  {id:'intr',title:'이자원가',fts:39,type:'num',ans:50000,bossWrong:'40000',
+   claim:'이자원가는 적립자산 $800,000에 5%를 곱해 $40,000입니다.',
+   ask:'이자원가는 얼마입니까? ($)',
+   hint:'이자원가 = 기초 PBO × 할인율 = 1,000,000 × 5% = 50,000.',
+   why:'이자원가 = 기초 PBO × 할인율 = 50,000.',win:'……50,000. PBO 기준이죠. 인정.',
+   pounce:{'40000':'적립자산이 아니라 PBO에 할인율을 곱합니다 — 1,000,000×5%=50,000.','50000':''}},
+  {id:'eret',title:'자산 기대수익',fts:35,type:'num',ans:64000,bossWrong:'90000',
+   claim:'올해 실제 자산수익 $90,000을 비용 계산에 반영합니다.',
+   ask:'순연금비용에 쓰는 자산수익은 얼마입니까? ($)',
+   hint:'기대수익 = 기초 적립자산 × 기대수익률 = 800,000 × 8% = 64,000 (실제 아님).',
+   why:'기대수익 800,000×8%=64,000 사용(실제수익은 OCI로).',win:'……64,000 기대수익. 실제를 끌어오려던 게 들켰네요.',
+   pounce:{'90000':'그건 실제수익입니다. 순연금비용엔 기대수익 800,000×8%=64,000.','64000':''}},
+  {id:'eretsign',title:'기대수익 부호',fts:42,type:'choice',bossWrong:'Y',
+   claim:'기대수익도 비용이니 순연금비용에 가산합시다.',
+   ask:'자산 기대수익은 순연금비용에 어떻게 반영합니까?',
+   choices:[{t:'가산한다',ok:false},{t:'차감한다',ok:true}],
+   hint:'자산이 벌어들인 기대수익은 비용을 줄임 — 차감.',
+   why:'기대수익은 순연금비용에서 차감.',win:'……차감이군요. 맞습니다.',
+   wrongLine:'자산이 번 수익은 비용을 줄입니다 — 가산이 아니라 차감이에요.'},
+  {id:'amort',title:'상각액 부호',fts:40,type:'choice',bossWrong:'N',
+   claim:'과거근무원가·순손실 상각은 서로 상쇄돼 비용에 영향 없습니다.',
+   ask:'과거근무원가 상각 $20,000과 순손실 상각 $5,000은 순연금비용을?',
+   choices:[{t:'증가시킨다',ok:true},{t:'영향 없다/감소',ok:false}],
+   hint:'과거근무원가 상각·순손실 상각은 모두 순연금비용을 증가.',
+   why:'두 상각 모두 비용 증가 요소(+25,000).',win:'……둘 다 비용 증가. 묻으려던 게 들켰습니다.',
+   wrongLine:'상쇄가 아닙니다 — 과거근무원가 상각·순손실 상각은 모두 비용을 증가시킵니다(+25,000).'}
+ ],
+ boss:[
+  {k:'intr',label:'이자원가 ($)',type:'num',ans:50000},
+  {k:'eret',label:'자산 기대수익 ($)',type:'num',ans:64000},
+  {k:'eretsign',label:'기대수익 부호',type:'yn',ans:'N',ynLabels:{Y:'가산',N:'차감'}},
+  {k:'amort',label:'상각액 효과',type:'yn',ans:'Y',ynLabels:{Y:'비용 증가',N:'영향 없음'}},
+  {k:'npc',label:'순연금비용 ($)',type:'num',ans:131000}
+ ]
+},
+{
+ id:'lease', area:'Area II', title:'Vertex Logistics — 리스(ASC 842)', sub:'적발 4건 · 보스 4필드',
+ brief:'CFO가 리스를 운용으로 분류하고 부채를 할인 없이 잡으려 한다. ASC 842 차주 회계로 바로잡아라.',
+ facts:[['리스기간','5년 · 연 리스료 $25,000 (기말 지급)'],['내재이자율','6% · PVIFA(6%,5)=4.2124'],['리스개설직접원가','$3,000'],['자산 경제적 내용연수','6년 (소유권 이전 없음)']],
+ W:[
+  {id:'liab',title:'리스부채 측정',fts:36,type:'num',ans:105310,bossWrong:'125000',
+   claim:'리스부채는 5년 × $25,000 = $125,000입니다.',
+   ask:'리스개시일 리스부채는 얼마입니까? ($)',
+   hint:'리스료의 현재가치: 25,000 × 4.2124 = 105,310.',
+   why:'리스부채 = 25,000 × PVIFA 4.2124 = 105,310.',win:'……105,310. 할인을 해야죠. 인정.',
+   pounce:{'125000':'화폐의 시간가치를 무시하셨네요 — 25,000×4.2124=105,310.','105310':''}},
+  {id:'rou',title:'사용권자산',fts:38,type:'num',ans:108310,bossWrong:'105310',
+   claim:'사용권자산은 리스부채와 같은 $105,310으로 잡습니다.',
+   ask:'사용권자산(ROU)은 얼마입니까? ($)',
+   hint:'ROU = 리스부채 + 리스개설직접원가 = 105,310 + 3,000 = 108,310.',
+   why:'ROU = 부채 105,310 + 개설직접원가 3,000 = 108,310.',win:'……108,310. 개설직접원가를 더해야죠.',
+   pounce:{'105310':'리스개설직접원가 $3,000을 빠뜨리셨습니다 — ROU 108,310.','108310':''}},
+  {id:'cls',title:'리스 분류',fts:35,type:'choice',bossWrong:'Y',
+   claim:'소유권 이전도 없으니 운용리스로 분류합시다.',
+   ask:'이 리스의 분류는?',
+   choices:[{t:'운용리스',ok:false},{t:'금융리스',ok:true}],
+   hint:'리스기간 5년 / 경제적 내용연수 6년 = 83% ≥ 75%(주요부분) → 금융리스.',
+   why:'5/6=83%≥75% 주요부분 기준 → 금융리스.',win:'……금융리스군요. 5/6이 83%니까요.',
+   wrongLine:'5/6 = 83%로 자산 내용연수의 주요부분(≥75%)을 차지합니다 — 금융리스예요.'},
+  {id:'exp',title:'비용 인식 패턴',fts:41,type:'choice',bossWrong:'Y',
+   claim:'비용은 매년 같은 금액으로 단일 정액 인식하면 됩니다.',
+   ask:'금융리스의 비용 인식은?',
+   choices:[{t:'단일 정액(straight-line)',ok:false},{t:'이자비용 + 상각비 분리',ok:true}],
+   hint:'금융리스 = 부채 이자비용 + ROU 상각비 분리(앞쪽이 큰 체감형).',
+   why:'금융리스는 이자비용+상각비 분리 인식.',win:'……이자+상각 분리. 맞습니다.',
+   wrongLine:'단일 정액은 운용리스입니다. 금융리스는 이자비용과 상각비를 분리 인식해요.'}
+ ],
+ boss:[
+  {k:'liab',label:'리스부채 ($)',type:'num',ans:105310},
+  {k:'rou',label:'사용권자산 ROU ($)',type:'num',ans:108310},
+  {k:'cls',label:'리스 분류',type:'yn',ans:'N',ynLabels:{Y:'운용리스',N:'금융리스'}},
+  {k:'exp',label:'비용 인식',type:'yn',ans:'N',ynLabels:{Y:'단일 정액',N:'이자+상각 분리'}}
+ ]
+},
+{
+ id:'dtax', area:'Area II', title:'Lumen Inc. — 이연법인세', sub:'적발 4건 · 보스 4필드',
+ brief:'CFO가 비과세 이자에까지 이연법인세를 걸고 당기세를 부풀렸다. 일시적·영구적 차이를 구분해 바로잡아라.',
+ facts:[['세전 회계이익','$500,000'],['세무상 감가 초과(일시적)','$80,000 (세무 > 회계)'],['지방채 이자(비과세)','$20,000'],['세율','25%']],
+ W:[
+  {id:'perm',title:'지방채 이자 성격',fts:37,type:'choice',bossWrong:'Y',
+   claim:'지방채 이자 $20,000도 일시적 차이로 보고 이연법인세를 인식합시다.',
+   ask:'비과세 지방채 이자는 어떤 차이입니까?',
+   choices:[{t:'일시적 차이(이연법인세 인식)',ok:false},{t:'영구적 차이(이연 없음)',ok:true}],
+   hint:'영원히 과세되지 않는 항목은 영구적 차이 — 이연법인세 없음.',
+   why:'지방채 이자는 영구적 차이, 이연법인세 대상 아님.',win:'……영구적 차이군요. 이연 안 걸리죠.',
+   wrongLine:'영원히 비과세인 항목은 영구적 차이입니다 — 이연법인세를 만들지 않아요.'},
+  {id:'cur',title:'당기 법인세부담',fts:34,type:'num',ans:100000,bossWrong:'125000',
+   claim:'당기세는 세전이익 $500,000에 25% = $125,000입니다.',
+   ask:'당기 법인세부담(미지급법인세)은? ($)',
+   hint:'과세소득 = 500,000 − 20,000(비과세) − 80,000(세무 초과감가) = 400,000 → ×25% = 100,000.',
+   why:'과세소득 400,000 × 25% = 100,000.',win:'……100,000. 과세소득 기준이죠.',
+   pounce:{'125000':'세전회계이익이 아니라 과세소득(400,000)에 과세합니다 — 100,000.','100000':''}},
+  {id:'def',title:'이연법인세 변동',fts:36,type:'num',ans:20000,bossWrong:'25000',
+   claim:'일시적·영구 차이 합 $100,000에 25% = $25,000을 이연부채로 잡죠.',
+   ask:'이연법인세부채(DTL) 변동액은? ($)',
+   hint:'일시적 차이 $80,000에만 적용: 80,000 × 25% = 20,000(지방채 제외).',
+   why:'DTL = 일시적 차이 80,000 × 25% = 20,000.',win:'……20,000. 지방채는 빼야죠.',
+   pounce:{'25000':'지방채(영구차이)까지 넣으셨네요. 일시적 80,000×25%=20,000.','20000':''}},
+  {id:'comp',title:'법인세비용 구성',fts:43,type:'choice',bossWrong:'',
+   claim:'법인세비용은 당기세만 잡으면 됩니다.',
+   ask:'법인세비용은 어떻게 구성됩니까?',
+   choices:[{t:'당기세 + 이연세',ok:true},{t:'당기세만',ok:false}],
+   hint:'법인세비용 = 당기 법인세 + 이연법인세 변동.',
+   why:'법인세비용 = 당기 100,000 + 이연 20,000 = 120,000.',win:'……당기+이연. 합 120,000이군요.',
+   wrongLine:'이연분을 빼면 안 됩니다 — 법인세비용 = 당기세 + 이연세.'}
+ ],
+ boss:[
+  {k:'perm',label:'지방채 이자 성격',type:'yn',ans:'N',ynLabels:{Y:'일시적',N:'영구적'}},
+  {k:'cur',label:'당기 법인세부담 ($)',type:'num',ans:100000},
+  {k:'def',label:'이연법인세 변동 ($)',type:'num',ans:20000},
+  {k:'texp',label:'법인세비용 합계 ($)',type:'num',ans:120000}
+ ]
+},
+{
+ id:'cf', area:'Area II', title:'Cascade Foods — 영업활동 현금흐름(간접법)', sub:'적발 4건 · 보스 5필드',
+ brief:'CFO가 가감 부호를 뒤섞어 영업현금흐름을 부풀렸다. 간접법 조정 부호를 바로잡아라.',
+ facts:[['당기순이익','$200,000'],['감가상각비','$40,000'],['유형자산처분이익','$15,000'],['매출채권 증가','$30,000'],['재고자산 감소','$10,000'],['매입채무 증가','$12,000']],
+ W:[
+  {id:'dep',title:'감가상각비 조정',fts:42,type:'choice',bossWrong:'N',
+   claim:'감가상각비 $40,000은 비용이니 순이익에서 차감합니다.',
+   ask:'감가상각비는 간접법에서?',
+   choices:[{t:'가산',ok:true},{t:'차감',ok:false}],
+   hint:'감가상각은 비현금비용 — 순이익에 가산.',
+   why:'비현금비용이므로 가산.',win:'……가산. 비현금이니까요.',
+   wrongLine:'현금이 나간 게 아닙니다 — 비현금비용이라 가산합니다.'},
+  {id:'gain',title:'처분이익 조정',fts:35,type:'choice',bossWrong:'Y',
+   claim:'유형자산처분이익 $15,000은 이익이니 영업에 가산합니다.',
+   ask:'유형자산처분이익은 영업활동에서?',
+   choices:[{t:'가산',ok:false},{t:'차감',ok:true}],
+   hint:'처분손익은 투자활동 — 영업에서 이익은 차감(중복 제거).',
+   why:'투자활동 항목이라 영업에서 차감.',win:'……차감. 투자활동이죠.',
+   wrongLine:'그건 투자활동 손익입니다 — 영업에서 이익은 차감해 중복을 제거합니다.'},
+  {id:'ar',title:'매출채권 증가',fts:37,type:'choice',bossWrong:'Y',
+   claim:'매출채권 증가 $30,000은 자산이 늘었으니 가산합니다.',
+   ask:'매출채권 증가는?',
+   choices:[{t:'가산',ok:false},{t:'차감',ok:true}],
+   hint:'채권 증가 = 아직 못 받은 현금 → 차감.',
+   why:'영업자산 증가는 현금 묶임 → 차감.',win:'……차감. 현금이 묶였죠.',
+   wrongLine:'채권이 늘면 받은 현금이 그만큼 적습니다 — 차감이에요.'},
+  {id:'ap',title:'매입채무 증가',fts:40,type:'choice',bossWrong:'N',
+   claim:'매입채무 증가 $12,000은 부채니 차감합니다.',
+   ask:'매입채무 증가는?',
+   choices:[{t:'가산',ok:true},{t:'차감',ok:false}],
+   hint:'채무 증가 = 아직 안 낸 현금 보유 → 가산.',
+   why:'영업부채 증가는 현금 유보 → 가산.',win:'……가산. 현금을 안 냈으니까요.',
+   wrongLine:'채무가 늘면 그만큼 현금을 덜 낸 겁니다 — 가산이에요.'}
+ ],
+ boss:[
+  {k:'dep',label:'감가상각비',type:'yn',ans:'Y',ynLabels:{Y:'가산',N:'차감'}},
+  {k:'gain',label:'유형자산처분이익',type:'yn',ans:'N',ynLabels:{Y:'가산',N:'차감'}},
+  {k:'ar',label:'매출채권 증가',type:'yn',ans:'N',ynLabels:{Y:'가산',N:'차감'}},
+  {k:'ap',label:'매입채무 증가',type:'yn',ans:'Y',ynLabels:{Y:'가산',N:'차감'}},
+  {k:'cfo',label:'영업활동 현금흐름 ($)',type:'num',ans:217000}
+ ]
+},
+{
+ id:'rev', area:'Area II', title:'Nimbus Software — 수익인식(ASC 606)', sub:'적발 4건 · 보스 4필드',
+ brief:'CFO가 묶음계약을 한 시점에 몰아 인식했다. 5단계로 수행의무를 나눠 진짜 1차연도 수익을 산출하라.',
+ facts:[['계약','제품 + 1년 용역 묶음 · 총 대가 $120,000'],['개별판매가격','제품 $100,000 · 용역 $50,000 (합 $150,000)'],['계약 개시','10/1 (용역 12개월)'],['제품 인도','10/1 (한 시점)']],
+ W:[
+  {id:'po',title:'수행의무 식별',fts:38,type:'choice',bossWrong:'',
+   claim:'제품과 용역은 한 계약이니 하나의 수행의무로 봅니다.',
+   ask:'수행의무는 몇 개입니까?',
+   choices:[{t:'1개(통합)',ok:false},{t:'2개(제품·용역 구별)',ok:true}],
+   hint:'제품과 용역이 각각 구별되면 별개 수행의무 — 2개.',
+   why:'구별되는 재화·용역 → 2개의 수행의무.',win:'……2개군요. 묶어서 한 번에 인식하려던 거죠.',
+   wrongLine:'제품과 용역은 구별됩니다 — 별개의 수행의무 2개입니다.'},
+  {id:'alloc',title:'거래가격 배분',fts:35,type:'num',ans:80000,bossWrong:'100000',
+   claim:'제품 수익은 개별판매가격 그대로 $100,000으로 잡습니다.',
+   ask:'제품에 배분되는 거래가격은? ($)',
+   hint:'상대적 개별판매가격: 120,000 × (100,000/150,000) = 80,000.',
+   why:'120,000 × 100/150 = 80,000(할인 안분).',win:'……80,000. 할인을 안분해야죠.',
+   pounce:{'100000':'총대가가 150,000이 아니라 120,000입니다 — 120,000×100/150=80,000.','80000':''}},
+  {id:'svc',title:'용역수익 인식시기',fts:34,type:'num',ans:10000,bossWrong:'40000',
+   claim:'용역 배분액 $40,000을 1차연도에 전액 인식합니다.',
+   ask:'1차연도(10/1~12/31) 용역수익은? ($)',
+   hint:'용역은 기간에 걸쳐: 40,000 × (3/12) = 10,000.',
+   why:'용역 40,000 × 3/12 = 10,000(기간 안분).',win:'……10,000. 3개월치만이죠.',
+   pounce:{'40000':'용역은 기간에 걸쳐 인식합니다 — 3개월치 40,000×3/12=10,000.','10000':''}},
+  {id:'ptime',title:'제품 인식시점',fts:40,type:'choice',bossWrong:'N',
+   claim:'제품 수익도 용역처럼 기간에 걸쳐 나눠 인식합시다.',
+   ask:'제품 수익의 인식시점은?',
+   choices:[{t:'한 시점(인도 시)',ok:true},{t:'기간에 걸쳐',ok:false}],
+   hint:'제품 통제가 인도 시 이전 → 한 시점에 전액 인식.',
+   why:'제품은 인도(통제이전) 시 한 시점 인식 → 80,000.',win:'……한 시점. 인도됐으니 전액이죠.',
+   wrongLine:'제품은 통제가 인도 시 넘어갑니다 — 한 시점에 전액 인식이에요.'}
+ ],
+ boss:[
+  {k:'alloc',label:'제품 배분액 ($)',type:'num',ans:80000},
+  {k:'svc',label:'1차연도 용역수익 ($)',type:'num',ans:10000},
+  {k:'ptime',label:'제품 인식시점',type:'yn',ans:'Y',ynLabels:{Y:'한 시점',N:'기간에 걸쳐'}},
+  {k:'rev1',label:'1차연도 총수익 ($)',type:'num',ans:90000}
+ ]
+},
+{
+ id:'fx', area:'Area II', title:'Helios Global — 외화환산·헤지', sub:'적발 4건 · 보스 4필드',
+ brief:'CFO가 환산방법과 손익 귀속을 뒤섞어 당기손익을 왜곡했다. 기능통화·환산조정·외화거래손익을 정확히 구분하라.',
+ facts:[['해외 종속기업','현지에서 자율 영업 · 현금흐름·가격결정 모두 현지통화 (기능통화=현지통화)'],['외화표시 매출채권','FC 100,000 (계상 시 환율 $1.20/FC)'],['기말 환율','$1.30/FC'],['쟁점','환산방법 · 환산조정 귀속 · 외화거래손익']],
+ W:[
+  {id:'method',title:'환산방법 결정',fts:32,type:'choice',bossWrong:'Y',
+   claim:'해외 종속기업이니 본사 통화 기준 시제법(remeasurement)으로 환산합시다.',
+   ask:'이 종속기업 재무제표의 환산방법은?',
+   choices:[{t:'시제법(remeasurement)',ok:false},{t:'현행환율법(translation)',ok:true}],
+   hint:'기능통화 = 현지통화 → 현행환율법(translation). 기능통화가 본사통화일 때만 시제법.',
+   why:'기능통화가 현지통화이므로 현행환율법.',win:'……현행환율법. 기능통화가 현지통화니까요.',
+   wrongLine:'기능통화가 현지통화입니다 — 시제법이 아니라 현행환율법(translation)이에요. 시제법은 기능통화가 본사통화일 때.'},
+  {id:'cta',title:'환산조정 귀속',fts:31,type:'choice',bossWrong:'Y',
+   claim:'환산에서 생기는 차이는 당기손익으로 반영하죠.',
+   ask:'현행환율법의 환산조정(CTA)은 어디로 갑니까?',
+   choices:[{t:'당기손익(NI)',ok:false},{t:'기타포괄손익(OCI)',ok:true}],
+   hint:'현행환율법의 환산조정은 기타포괄손익(CTA, 자본)으로.',
+   why:'환산조정(CTA)은 기타포괄손익(OCI).',win:'……OCI군요. 당기손익에 넣으려던 게 들켰습니다.',
+   wrongLine:'현행환율법의 환산조정은 당기손익이 아니라 기타포괄손익(CTA)입니다.'},
+  {id:'txn',title:'외화채권 거래손익',fts:33,type:'num',ans:10000,bossWrong:'0',
+   claim:'외화 매출채권은 장부금액 그대로 두고 환율차이는 무시합니다.',
+   ask:'기말 외화채권에서 인식할 거래손익은? ($, 절댓값)',
+   hint:'화폐성 항목은 기말 현행환율로 재측정: 100,000 × (1.30 − 1.20) = $10,000.',
+   why:'100,000 × (1.30−1.20) = $10,000 (채권이라 환율 상승 시 이익).',win:'……$10,000. 기말 재측정을 해야죠.',
+   pounce:{'0':'화폐성 항목은 기말 현행환율로 재측정합니다 — 100,000×0.10=$10,000.','130000':'그건 총 환산액이고, 손익은 차액 100,000×$0.10=$10,000.','120000':'그건 계상 시 금액입니다. 손익은 차액 $10,000.'}},
+  {id:'txnloc',title:'거래손익 귀속',fts:30,type:'choice',bossWrong:'Y',
+   claim:'그 외화채권 평가손익도 환산조정처럼 기타포괄손익(OCI)에 넣읍시다.',
+   ask:'외화채권 거래손익은 어디로 갑니까?',
+   choices:[{t:'기타포괄손익(OCI)',ok:false},{t:'당기손익(NI)',ok:true}],
+   hint:'환산조정(CTA)은 OCI지만, 외화 거래(화폐성 항목) 손익은 당기손익(NI).',
+   why:'외화거래손익은 당기손익(NI) — CTA(OCI)와 구분.',win:'……당기손익. CTA랑 헷갈리게 하려던 거죠.',
+   wrongLine:'그게 함정입니다. 환산조정(CTA)만 OCI예요. 외화 거래손익은 당기손익(NI)입니다.'}
+ ],
+ boss:[
+  {k:'method',label:'종속기업 환산방법',type:'yn',ans:'N',ynLabels:{Y:'시제법',N:'현행환율법'}},
+  {k:'cta',label:'환산조정(CTA) 귀속',type:'yn',ans:'N',ynLabels:{Y:'당기손익(NI)',N:'기타포괄손익(OCI)'}},
+  {k:'txn',label:'외화채권 거래손익 ($)',type:'num',ans:10000},
+  {k:'txnloc',label:'거래손익 귀속',type:'yn',ans:'N',ynLabels:{Y:'기타포괄손익(OCI)',N:'당기손익(NI)'}}
+ ]
+}
+];
+var CASE=null;
+
+function ac(){try{var C=window.AudioContext||window.webkitAudioContext;S.ac=S.ac||new C();return S.ac}catch(e){return null}}
+function tone(f,d,t,v){var c=ac();if(!c)return;try{var o=c.createOscillator(),g=c.createGain();o.type=t||'sine';o.frequency.value=f;g.gain.value=v||.05;o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+d)}catch(e){}}
+function sObj(){tone(520,.07,'square',.05);setTimeout(function(){tone(760,.1,'square',.045)},70)}
+function sGood(){tone(620,.1,'sine',.06);setTimeout(function(){tone(940,.16,'sine',.055)},95)}
+function sBad(){tone(150,.24,'sawtooth',.05)}
+function sWin(){[523,659,784,1047,1319].forEach(function(f,i){setTimeout(function(){tone(f,.18,'triangle',.06)},i*110)})}
+function sLose(){tone(200,.5,'sawtooth',.05)}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function num(v){return parseFloat(String(v).replace(/[^0-9.\-]/g,''))}
+function fmtGroup(v,dec){var neg=/^\s*-/.test(v);v=String(v).replace(/,/g,'');if(dec){v=v.replace(/[^0-9.]/g,'');var i=v.indexOf('.');var ip=(i>=0?v.slice(0,i):v).replace(/[^0-9]/g,'');var dp=(i>=0?v.slice(i+1).replace(/[^0-9]/g,''):'');return (neg?'-':'')+ip.replace(/\B(?=(\d{3})+(?!\d))/g,',')+(i>=0?('.'+dp):'')}v=v.replace(/[^0-9]/g,'');return (neg?'-':'')+v.replace(/\B(?=(\d{3})+(?!\d))/g,',')}
+function group(el){el.addEventListener('input',function(){var s=el.selectionStart;var before=el.value.slice(0,s).replace(/[^0-9]/g,'').length;var f=fmtGroup(el.value,false);el.value=f;var p=0,seen=0;while(p<f.length&&seen<before){if(/[0-9]/.test(f[p]))seen++;p++;}try{el.setSelectionRange(p,p)}catch(e){}})}
+function shields(){var s='';for(var i=0;i<MAXH;i++){s+='<span style="font-size:20px;color:'+(i<S.h?'var(--good)':'#33425e')+'">◆</span>'}return s}
+function mood(){return S.h>=3?'침착':(S.h===2?'동요':'궁지')}
+function hud(){return '<div class="hud"><div><div class="lbl">신뢰도 · CFO '+ (CASE? mood():'') +'</div><div class="big">'+(CASE?shields():'⚖️')+'</div></div>'
+ +(CASE?'<div style="text-align:center"><div class="lbl">적발</div><div class="big gold">'+S.caught+'/4</div></div>':'')
+ +'<div style="text-align:right"><div class="lbl">평판</div><div class="big">'+Math.round(SAVE.rep)+'</div></div></div>'}
+
+function level(st){if(!st||!st.plays)return ['미플레이','var(--mut)'];if(st.box>=3)return ['숙달','var(--good)'];if(st.box===0)return ['취약','var(--bad)'];return ['연습','var(--warn)'];}
+function priority(c){var st=SAVE.stat[c.id];if(!st||!st.plays)return 1000;var p=(3-(st.box||0))*120;var need=Math.ceil(c.boss.length*0.7);if(st.lastScore<need)p+=80;var iv=[0,6*3600e3,24*3600e3,3*24*3600e3][st.box||0];if(Date.now()-(st.lastTs||0)>iv)p+=60;return p;}
+function weakTopics(){var agg={};CASES.forEach(function(c){var st=SAVE.stat[c.id];if(!st||!st.missW)return;Object.keys(st.missW).forEach(function(id){var w=c.W.filter(function(x){return x.id===id})[0];if(!w)return;agg[w.title]=(agg[w.title]||0)+st.missW[id];});});return Object.keys(agg).map(function(k){return [k,agg[k]]}).sort(function(a,b){return b[1]-a[1]}).slice(0,3);}
+function recordStat(pass,good){var st=SAVE.stat[CASE.id]||{box:0,plays:0,wins:0,missW:{},over:0,lastTs:0,lastScore:0};st.plays++;st.lastTs=Date.now();st.lastScore=good;Object.keys(S.lost).forEach(function(id){st.missW[id]=(st.missW[id]||0)+1});st.over=(st.over||0)+S.over;if(pass){st.wins++;st.box=Math.min(3,(st.box||0)+1);}else{st.box=0;}SAVE.stat[CASE.id]=st;}
+function pickWeakest(){return CASES.map(function(c){return {c:c,pr:priority(c)}}).sort(function(x,y){return y.pr-x.pr})[0].c;}
+function home(){
+ CASE=null;
+ var ranked=CASES.map(function(c,idx){return {c:c,idx:idx,pr:priority(c)}}).sort(function(a,b){return b.pr-a.pr});
+ var top=ranked[0];
+ var list=ranked.map(function(o){var st=SAVE.stat[o.c.id];var lv=level(st);var sc=(st&&st.plays)?(' · 최근 '+st.lastScore+'/'+o.c.boss.length):'';var hi=(o===top)?' style="border-color:var(--gold)"':'';
+  return '<div class="cs"'+hi+' data-a="pick" data-i="'+o.idx+'"><div><div style="font-weight:700">'+esc(o.c.title)+(o===top?' <span class="gold">◀ 추천</span>':'')+'</div><div class="muted">'+o.c.area+' · '+esc(o.c.sub)+sc+'</div></div><div style="text-align:right"><span style="color:'+lv[1]+'">'+lv[0]+'</span><div class="muted">▶ 수임</div></div></div>'}).join('');
+ var wt=weakTopics();var wtline=wt.length?('<div class="muted" style="margin-top:8px">약점 토픽: '+wt.map(function(x){return esc(x[0])+' ('+x[1]+')'}).join(' · ')+'</div>'):'';
+ app.innerHTML=hud()
+ +'<div class="card"><div class="title">⚖️ BAR 포렌식 감사국</div><div class="sub">CFO 대질 · 누적 승소 '+SAVE.wins+'건 · 최고 평판 '+SAVE.best+'</div>'
+ +'<p style="margin:10px 0 0;color:#dbe3f3">약점일수록 위로 올라온다. 진 사건은 박스가 0으로 리셋돼 다시 최우선이 되고, 숙달(박스3)은 시간이 지나면 복습 대상으로 재등장한다.</p>'+wtline
+ +'<button class="btn primary full" style="margin-top:12px" data-a="autoweak">🎯 약점 자동 출제 — 가장 취약한 사건</button></div>'
+ +list+'<div class="foot">자동 저장 · 오프라인 · 포렌식 감사 v2 · 적응형 출제 (사건 11건)</div>';
+}
+function reset(){S={h:MAXH,i:0,conf:'보통',lost:{},over:0,care:0,caught:0,tries:0,settled:false,timer:null,ac:S.ac}}
+
+function intro(){
+ var f=CASE.facts.map(function(r){return '<tr><td>'+esc(r[0])+'</td><td>'+esc(r[1])+'</td></tr>'}).join('');
+ app.innerHTML=hud()
+ +'<div class="card"><div class="title">'+esc(CASE.title)+'</div><div class="sub">'+CASE.area+' · '+esc(CASE.sub)+'</div>'
+ +'<p style="margin:12px 0 0;color:#dbe3f3">'+esc(CASE.brief)+'</p></div>'
+ +'<div class="card"><div class="muted" style="margin-bottom:6px">증거 자료</div><table class="tbl">'+f+'</table></div>'
+ +'<div class="row"><button class="btn" data-a="home">← 사건 목록</button><button class="btn primary" style="flex:1" data-a="begin">수임하기 →</button></div>';
+}
+
+function witness(){
+ var w=CASE.W[S.i];
+ var pw=w.fts<33?'강':(w.fts<40?'중':'약');
+ var input;
+ if(w.type==='choice'){input=w.choices.map(function(c,j){return '<button class="btn choice" data-a="ans" data-j="'+j+'">'+esc(c.t)+'</button>'}).join('');}
+ else{input='<input class="in" id="ans" inputmode="decimal" placeholder="숫자 입력 후 제출" autocomplete="off"/><button class="btn primary full" style="margin-top:10px" data-a="submit">제출 (이의 있음!)</button>';}
+ var hintBtn = S.tries>=1 ? '<button class="btn" style="margin-top:10px" data-a="hint">단서 흘리게 만들기 (신뢰도 −1)</button>' : '';
+ app.innerHTML=hud()
+ +'<div class="card"><div class="cfo"><div class="ava">CFO</div><div style="flex:1"><div style="font-weight:700">한정수 <span class="muted" style="font-weight:400">CFO</span></div>'
+ +'<div class="muted">증인 '+(S.i+1)+'/'+CASE.W.length+' · '+esc(w.title)+' · 군중 정답률 '+w.fts+'% · <span class="pill pow-'+pw+'">공격력 '+pw+'</span></div></div></div>'
+ +'<div class="bubble" style="margin-top:10px">“'+esc(w.claim)+'”</div></div>'
+ +'<div class="card"><div class="muted">확신을 걸까? (확신+정답 → 신뢰도 +1 · 확신+오답 → −2)</div>'
+ +'<div class="row" style="margin:8px 0 4px"><button class="btn '+(S.conf==='보통'?'sel':'')+'" style="flex:1" data-a="conf" data-v="보통">보통</button>'
+ +'<button class="btn '+(S.conf==='확신'?'sel':'')+'" style="flex:1" data-a="conf" data-v="확신">확신 ×2</button></div>'
+ +'<div class="q">'+esc(w.ask)+'</div>'+input+hintBtn+'</div>';
+ var el=document.getElementById('ans'); if(el){el.focus(); group(el); el.addEventListener('keydown',function(e){if(e.key==='Enter')commit(num(el.value))});}
+}
+function commit(val){
+ var w=CASE.W[S.i],ok,line;
+ if(w.type==='choice'){ok=(val===true);line=ok?w.win:w.wrongLine;}
+ else{ok=(Math.abs(val-w.ans)<=0.0001); var pk=String(Math.round(val)); line=ok?w.win:((w.pounce&&w.pounce[pk])?w.pounce[pk]:'그 숫자로는 조서를 못 씁니다. 다시 보시죠.');}
+ var conf=S.conf,r={ok:ok,dmg:0,heal:false,cf:false,line:line};
+ if(ok){sObj();sGood();S.caught++;if(conf==='확신'){S.h=Math.min(MAXH,S.h+1);r.heal=true}else{S.care++}}
+ else{sBad();var d=1+(conf==='확신'?1:0)+(w.fts<33?1:0);S.h=Math.max(0,S.h-d);r.dmg=d;S.lost[w.id]=true;if(conf==='확신'){S.over++;r.cf=true}S.tries++;}
+ result(r,ok);
+}
+function result(r,ok){
+ var w=CASE.W[S.i],dead=S.h<=0;
+ var head=ok?'<div class="pop" style="font-size:18px;font-weight:700"><span class="good">⚖️ 이의 인정</span> <span class="muted" style="font-weight:400">— 적발 '+S.caught+'/'+CASE.W.length+'</span></div>'
+  :'<div class="shake" style="font-size:18px;font-weight:700"><span class="bad">✕ 기각</span> <span class="muted" style="font-weight:400">— 신뢰도 −'+r.dmg+(r.cf?' (확신 페널티)':'')+'</span></div>';
+ var heal=r.heal?'<div class="good" style="font-size:13px;margin-top:2px">정확한 확신 — 신뢰도 +1</div>':'';
+ var why=ok?'<div class="muted" style="margin-top:10px"><span style="color:var(--ink)">근거</span> · '+esc(w.why)+'</div>':'';
+ var retry=(!ok&&!dead)?'<button class="btn primary full" style="margin-top:12px" data-a="retry">다시 반박</button>':'';
+ var na=ok?(S.i>=CASE.W.length-1?'boss':'next'):(dead?'over':null);
+ var nl=ok?(S.i>=CASE.W.length-1?'보스: 계산표로 →':'다음 증인 →'):'사건 종료 — 평결 불가';
+ var nb=(ok||dead)?'<button class="btn '+(ok?'primary':'')+' full" style="margin-top:12px" data-a="'+na+'">'+nl+'</button>':'';
+ app.innerHTML=hud()+'<div class="card '+(ok?'':'shake')+'">'+head+heal+'<div class="bubble" style="margin-top:10px">“'+esc(r.line)+'”</div>'+why+'</div>'+retry+nb;
+}
+function boss(){
+ var f=CASE.facts.map(function(r){return '<tr><td>'+esc(r[0])+'</td><td>'+esc(r[1])+'</td></tr>'}).join('');
+ var rows=CASE.boss.map(function(fd){
+  var w=CASE.W.filter(function(x){return x.id===fd.k})[0];
+  var pre=(w&&w.bossWrong&&S.lost[fd.k])?w.bossWrong:'';
+  var warn=pre?'<div class="warn">⚠ CFO 주장값 — 검토하라</div>':'';
+  var inp;
+  if(fd.type==='yn'){inp='<select class="in" id="f_'+fd.k+'" style="width:170px"><option value="">선택</option><option value="Y"'+(pre==='Y'?' selected':'')+'>'+esc(fd.ynLabels.Y)+'</option><option value="N"'+(pre==='N'?' selected':'')+'>'+esc(fd.ynLabels.N)+'</option></select>'}
+  else{inp='<input class="in" id="f_'+fd.k+'" inputmode="decimal" value="'+(pre?fmtGroup(pre,fd.type==='eps'):'')+'" placeholder="입력"/>'}
+  return '<div class="fld"><div>'+esc(fd.label)+warn+'</div>'+inp+'</div>'
+ }).join('');
+ app.innerHTML=hud()
+ +'<div class="card" style="display:flex;align-items:center;justify-content:space-between"><div style="font-weight:700">🔒 보스 — 평결 계산 <span class="muted" style="font-weight:400">(콜드 · 힌트 없음)</span></div><div class="timer" id="tmr">3:00</div></div>'
+ +'<div class="card"><div class="muted" style="margin-bottom:6px">증거 자료</div><table class="tbl">'+f+'</table></div>'
+ +'<div class="card">'+rows+'</div>'
+ +'<button class="btn primary full" data-a="grade">평결 제출 ⚖️</button>';
+ CASE.boss.forEach(function(fd){if(fd.type==='num'){var el=document.getElementById('f_'+fd.k);if(el)group(el)}});
+ startTimer();
+}
+function startTimer(){var t=180;S.timer=setInterval(function(){t--;var e=document.getElementById('tmr');if(!e){clearInterval(S.timer);return}var m=Math.floor(t/60),s=t%60;e.textContent=m+':'+(s<10?'0':'')+s;if(t<=30)e.style.color='var(--bad)';if(t<=0){clearInterval(S.timer);grade()}},1000)}
+function grade(){
+ if(S.settled)return;clearInterval(S.timer);
+ var res=CASE.boss.map(function(fd){var el=document.getElementById('f_'+fd.k);var raw=el?el.value:'';var ok;
+  if(fd.type==='yn')ok=(raw===fd.ans);else if(fd.type==='eps')ok=Math.abs(num(raw)-fd.ans)<=0.0101;else ok=(num(raw)===fd.ans);
+  return {label:fd.label,ans:fd.ans,raw:raw,ok:ok,type:fd.type}});
+ var good=res.filter(function(r){return r.ok}).length, need=Math.ceil(CASE.boss.length*0.7), pass=good>=need;
+ S.settled=true; SAVE.rep=Math.max(0,Math.min(100,SAVE.rep+(pass?12:-8)));
+ if(pass){SAVE.wins++;SAVE.cleared[CASE.id]=true;} SAVE.best=Math.max(SAVE.best,SAVE.rep); recordStat(pass,good); save();
+ verdict(res,good,need,pass);
+}
+function fmt(r){if(r.raw==='')return '—';return r.type==='eps'?'$'+r.raw:esc(r.raw)}
+function fmtA(r){if(r.type==='yn')return r.ans;return r.type==='eps'?'$'+r.ans.toFixed(2):fmtGroup(String(r.ans),false)}
+function verdict(res,good,need,pass){
+ pass?sWin():sLose();
+ var rows=res.map(function(r){return '<div class="fld"><div>'+(r.ok?'<span class="good">✓</span>':'<span class="bad">✕</span>')+' '+esc(r.label)+'</div><div style="text-align:right;font-family:var(--mono);font-size:14px"><span class="'+(r.ok?'good':'bad')+'">'+fmt(r)+'</span>'+(r.ok?'':' <span class="muted">→ '+fmtA(r)+'</span>')+'</div></div>'}).join('');
+ var banner=pass?'<div class="card pop" style="border-color:#1f6e54;background:#10261d"><div style="font-size:19px;font-weight:800" class="good">⚖️ 분식 적발 — 사건 승소</div><div class="muted" style="margin-top:4px">'+good+'/'+CASE.boss.length+' 정확 · 평판 +12 (현재 '+Math.round(SAVE.rep)+')</div></div>'
+  :'<div class="card shake" style="border-color:#5a2a25;background:#26110f"><div style="font-size:19px;font-weight:800" class="bad">CFO가 빠져나갔다 — 사건 패소</div><div class="muted" style="margin-top:4px">'+good+'/'+CASE.boss.length+' 정확 (합격 '+need+') · 평판 −8</div></div>';
+ app.innerHTML=hud()+banner
+ +'<div class="card">'+rows+'<div class="muted" style="margin-top:10px">보정: 확신하고 틀림 '+S.over+'회'+(S.over>=2?' (과신 경고)':'')+' · 신중하게 맞힘 '+S.care+'회</div></div>'
+ +'<div class="row"><button class="btn" style="flex:1" data-a="again">다시</button><button class="btn" style="flex:1" data-a="home">목록</button><button class="btn primary" style="flex:1" data-a="nextweak">🎯 다음 약점 →</button></div>';
+}
+function over(){
+ if(!S.settled){S.settled=true;SAVE.rep=Math.max(0,SAVE.rep-8);recordStat(false,0);save();}sLose();
+ app.innerHTML=hud()+'<div class="card shake" style="border-color:#5a2a25;background:#26110f"><div style="font-size:19px;font-weight:800" class="bad">신뢰도 소진 — CFO가 법정을 빠져나갔다</div><div class="muted" style="margin-top:4px">평결까지 가지 못함 · 평판 −8</div></div>'
+ +'<div class="row"><button class="btn" style="flex:1" data-a="again">다시</button><button class="btn" style="flex:1" data-a="home">목록</button><button class="btn primary" style="flex:1" data-a="nextweak">🎯 다음 약점 →</button></div>';
+}
+app.addEventListener('click',function(e){var t=e.target.closest('[data-a]');if(!t)return;var a=t.getAttribute('data-a');
+ if(a==='autoweak'||a==='nextweak'){ac();CASE=pickWeakest();reset();S.auto=true;intro();return}
+ if(a==='pick'){ac();CASE=CASES[+t.getAttribute('data-i')];reset();intro();return}
+ if(a==='home'){home();return}
+ if(a==='begin'){reset();witness();return}
+ if(a==='conf'){S.conf=t.getAttribute('data-v');witness();return}
+ if(a==='ans'){commit(CASE.W[S.i].choices[+t.getAttribute('data-j')].ok);return}
+ if(a==='submit'){var el=document.getElementById('ans');var v=num(el?el.value:'');if(isNaN(v)){el.style.borderColor='var(--bad)';return}commit(v);return}
+ if(a==='hint'){S.h=Math.max(0,S.h-1);var w=CASE.W[S.i];if(S.h<=0){over();return}var q=app.querySelector('.q');if(q)q.insertAdjacentHTML('afterend','<div class="bubble" style="margin:8px 0;border-left-color:var(--warn)">단서 · '+esc(w.hint)+'</div>');return}
+ if(a==='retry'){witness();return}
+ if(a==='next'){S.i++;S.conf='보통';S.tries=0;witness();return}
+ if(a==='boss'){boss();return}
+ if(a==='over'){over();return}
+ if(a==='grade'){grade();return}
+ if(a==='again'){reset();intro();return}
+});
+home();
+})();
+</script>
+<script>(function(){
+  if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('./sw.js').then(function(reg){reg.addEventListener('updatefound',function(){var nw=reg.installing;if(nw)nw.addEventListener('statechange',function(){if(nw.state==='installed'&&navigator.serviceWorker.controller)showUpdate();});});}).catch(function(){});});}
+  function showUpdate(){if(document.getElementById('pwa-upd'))return;var u=document.createElement('div');u.id='pwa-upd';u.textContent='\uD83D\uDD04 \uC0C8 \uBC84\uC804 \u00B7 \uD0ED\uD558\uC5EC \uC0C8\uB85C\uACE0\uCE68';u.style.cssText='position:fixed;left:50%;transform:translateX(-50%);top:calc(8px + env(safe-area-inset-top,0px));z-index:2147483600;padding:9px 16px;border-radius:999px;background:#1d6a2f;color:#eafbe9;font:600 13px/1 system-ui,-apple-system,sans-serif;box-shadow:0 6px 18px rgba(0,0,0,.45);cursor:pointer';u.onclick=function(){location.reload();};document.body.appendChild(u);}
+  var dp=null, HKEY='pwaHintDismissed_v1';
+  window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();dp=e;
+    if(document.getElementById('pwa-ib'))return;
+    var b=document.createElement('button');b.id='pwa-ib';b.textContent='\uD83D\uDCF2 \uC571 \uC124\uCE58 / Install';
+    b.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:2147483600;padding:10px 16px;border:0;border-radius:999px;background:linear-gradient(180deg,#e8c25e,#caa24a);color:#2a1c06;font:600 14px/1 system-ui,-apple-system,sans-serif;box-shadow:0 6px 18px rgba(0,0,0,.4);cursor:pointer';
+    b.onclick=function(){if(!dp)return;dp.prompt();dp.userChoice.then(function(){dp=null;b.remove();});};
+    document.body.appendChild(b);
+  });
+  window.addEventListener('appinstalled',function(){var b=document.getElementById('pwa-ib');if(b)b.remove();});
+  try{
+    var isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent)&&!window.MSStream;
+    var standalone=window.navigator.standalone===true||window.matchMedia('(display-mode: standalone)').matches;
+    if(isIOS&&!standalone&&!localStorage.getItem(HKEY)){
+      var h=document.createElement('div');
+      h.innerHTML='<span>\uC124\uCE58: <b>\uACF5\uC720 \u2B06\uFE0F \u2192 \uD648 \uD654\uBA74\uC5D0 \uCD94\uAC00</b></span><span id="pwa-x" style="margin-left:12px;cursor:pointer;font-weight:700">\u2715</span>';
+      h.style.cssText='position:fixed;left:10px;right:10px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:2147483600;display:flex;justify-content:center;align-items:center;gap:6px;padding:11px 14px;border-radius:12px;background:rgba(18,22,38,.95);color:#f0e3c2;font:500 13px/1.3 system-ui,-apple-system,sans-serif;box-shadow:0 6px 18px rgba(0,0,0,.5)';
+      document.body.appendChild(h);
+      h.querySelector('#pwa-x').onclick=function(){h.remove();try{localStorage.setItem(HKEY,'1');}catch(e){}};
+    }
+  }catch(e){}
+})();</script>
+</body>
+</html>
